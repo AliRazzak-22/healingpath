@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير المالية | صيدلية درب الشفاء</title>
+    <!-- استدعاء خط احترافي من جوجل -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0d9488;
+            --secondary-color: #0f766e;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-bg: #f9fafb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        #months-view {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .month-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            padding: 25px 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .month-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        #table-view {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background-color: var(--text-main);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: #374151;
+        }
+
+        .month-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1rem;
+        }
+
+        th {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .highlight-net {
+            font-weight: bold;
+            color: #059669;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .summary-card.net-total {
+            border-top-color: #059669;
+            background-color: #ecfdf5;
+        }
+
+        .summary-card h3 {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .summary-card p {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .summary-card.net-total p {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="header-title">التقارير المالية الشهرية لصيدلية درب الشفاء</h1>
+
+    <div id="months-view">
+        <!-- سيتم توليد الأزرار هنا بواسطة الجافاسكربت -->
+    </div>
+
+    <div id="table-view">
+        <div class="controls">
+            <button class="back-btn" onclick="showMonthsView()">⟵ رجوع</button>
+            <h2 class="month-title" id="current-month-title">شهر 5 - 2026</h2>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>اليوم</th>
+                        <th>التاريخ</th>
+                        <th>المبيعات اليومية</th>
+                        <th>الربح الصافي</th>
+                        <th>الصرفيات / التسديدات</th>
+                        <th>التفاصيل</th>
+                        <th>صافي الدخل اليومي</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- سيتم توليد الصفوف هنا -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3>المبيعات الشهرية الكلية</h3>
+                <p id="total-sales">0</p>
+            </div>
+            <div class="summary-card">
+                <h3>الصرفيات والتسديدات الشهرية</h3>
+                <p id="total-expenses">0</p>
+            </div>
+            <div class="summary-card net-total">
+                <h3>صافي الوارد الشهري</h3>
+                <p id="total-net">0</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+
+    <script>
+        const daysInArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        
+        const monthsToDisplay = [
+            { year: 2026, month: 5 },
+            { year: 2026, month: 6 },
+            { year: 2026, month: 7 },
+            { year: 2026, month: 8 }
+        ];
+
+        function init() {
+            const monthsContainer = document.getElementById('months-view');
+            monthsToDisplay.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'month-btn';
+                btn.textContent = `${item.year}/${item.month}`;
+                btn.onclick = () => openMonthReport(item.year, item.month);
+                monthsContainer.appendChild(btn);
+            });
+        }
+
+        function showMonthsView() {
+            document.getElementById('table-view').style.display = 'none';
+            document.getElementById('months-view').style.display = 'grid';
+        }
+
+        function formatMoney(number) {
+            return number.toLocaleString('en-US');
+        }
+
+        function openMonthReport(year, month) {
+            document.getElementById('months-view').style.display = 'none';
+            document.getElementById('table-view').style.display = 'block';
+            document.getElementById('current-month-title').textContent = `شهر ${month} - ${year}`;
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = ''; 
+
+            let monthlyTotalSales = 0;
+            let monthlyTotalExpenses = 0;
+            let monthlyTotalNetIncome = 0;
+
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const dataKey = `${year}/${month}`;
+            const monthData = (typeof pharmacyData !== 'undefined' && pharmacyData[dataKey]) ? pharmacyData[dataKey] : {};
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateObj = new Date(year, month - 1, day);
+                const dayName = daysInArabic[dateObj.getDay()];
+                const fullDate = `${year}/${month}/${day}`;
+
+                const dayRecord = monthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
+                
+                // التعديل هنا: صافي الدخل اليومي = المبيعات - الصرفيات
+                const netDailyIncome = dayRecord.sales - dayRecord.expenses;
+
+                monthlyTotalSales += dayRecord.sales;
+                monthlyTotalExpenses += dayRecord.expenses;
+                monthlyTotalNetIncome += netDailyIncome;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${dayName}</td>
+                    <td>${fullDate}</td>
+                    <td>${formatMoney(dayRecord.sales)}</td>
+                    <td>${formatMoney(dayRecord.profit)}</td>
+                    <td>${formatMoney(dayRecord.expenses)}</td>
+                    <td>${dayRecord.details}</td>
+                    <td class="highlight-net">${formatMoney(netDailyIncome)}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('total-sales').textContent = formatMoney(monthlyTotalSales);
+            document.getElementById('total-expenses').textContent = formatMoney(monthlyTotalExpenses);
+            document.getElementById('total-net').textContent = formatMoney(monthlyTotalNetIncome);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
