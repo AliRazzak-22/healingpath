@@ -11,7 +11,7 @@ const pharmacyData = {
         "5": { sales: 45500, profit: 12500, expenses: 0, details: "-" },
         "6": { sales: 78000, profit: 14500, expenses: 0, details: "-" },
         "7": { sales: 73000, profit: 16500, expenses: 58000, details: "50 الف اسبوعية سكرتير " },
-        "8": { sales: 0, profit: 0, expenses: 0, details: "-" },
+        "8": { sales: 12500, profit: 2250, expenses: 0, details: "-" },
         // يمكنك إضافة باقي الأيام هنا بنفس الطريقة...
         // اليوم الذي لا تكتبه سيظهر كخلايا فارغة أو أصفار تلقائياً في الجدول
     },
