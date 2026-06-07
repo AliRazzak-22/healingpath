@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقارير المالية | صيدلية درب الشفاء</title>
-    <!-- استدعاء خط احترافي من جوجل -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <style>
@@ -146,7 +145,7 @@
 
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
 
@@ -157,6 +156,15 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             text-align: center;
             border-top: 4px solid var(--primary-color);
+        }
+
+        /* تنسيق خاص لبطاقة الأرباح */
+        .summary-card.profit-total {
+            border-top-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .summary-card.profit-total p {
+            color: #2563eb;
         }
 
         .summary-card.net-total {
@@ -186,8 +194,7 @@
     <h1 class="header-title">التقارير المالية الشهرية لصيدلية درب الشفاء</h1>
 
     <div id="months-view">
-        <!-- سيتم توليد الأزرار هنا بواسطة الجافاسكربت -->
-    </div>
+        </div>
 
     <div id="table-view">
         <div class="controls">
@@ -209,8 +216,7 @@
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <!-- سيتم توليد الصفوف هنا -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
 
@@ -219,6 +225,12 @@
                 <h3>المبيعات الشهرية الكلية</h3>
                 <p id="total-sales">0</p>
             </div>
+            
+            <div class="summary-card profit-total">
+                <h3>الربح الشهري الكلي</h3>
+                <p id="total-profit">0</p>
+            </div>
+
             <div class="summary-card">
                 <h3>الصرفيات والتسديدات الشهرية</h3>
                 <p id="total-expenses">0</p>
@@ -271,6 +283,7 @@
             tbody.innerHTML = ''; 
 
             let monthlyTotalSales = 0;
+            let monthlyTotalProfit = 0;   // <-- المتغير الجديد لجمع الأرباح
             let monthlyTotalExpenses = 0;
             let monthlyTotalNetIncome = 0;
 
@@ -285,10 +298,11 @@
 
                 const dayRecord = monthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
                 
-                // التعديل هنا: صافي الدخل اليومي = المبيعات - الصرفيات
+                // صافي الدخل اليومي = المبيعات - الصرفيات
                 const netDailyIncome = dayRecord.sales - dayRecord.expenses;
 
                 monthlyTotalSales += dayRecord.sales;
+                monthlyTotalProfit += dayRecord.profit; // <-- جمع الأرباح اليومية
                 monthlyTotalExpenses += dayRecord.expenses;
                 monthlyTotalNetIncome += netDailyIncome;
 
@@ -305,7 +319,9 @@
                 tbody.appendChild(tr);
             }
 
+            // تحديث القيم في البطاقات
             document.getElementById('total-sales').textContent = formatMoney(monthlyTotalSales);
+            document.getElementById('total-profit').textContent = formatMoney(monthlyTotalProfit); // <-- عرض مجموع الأرباح
             document.getElementById('total-expenses').textContent = formatMoney(monthlyTotalExpenses);
             document.getElementById('total-net').textContent = formatMoney(monthlyTotalNetIncome);
         }
