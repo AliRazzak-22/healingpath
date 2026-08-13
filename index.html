@@ -145,13 +145,15 @@
 
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            /* تم التعديل هنا: 5 أعمدة لضمان بقائها في سطر واحد */
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px; 
         }
 
         .summary-card {
             background: var(--card-bg);
-            padding: 25px;
+            /* تم تصغير الحشوة (padding) لتناسب الشاشة */
+            padding: 15px 10px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             text-align: center;
@@ -167,19 +169,30 @@
             color: #2563eb;
         }
 
+        /* تنسيق خاص لبطاقة النسبة المئوية (الجديدة) */
+        .summary-card.profit-percent {
+            border-top-color: #f59e0b;
+            background-color: #fffbeb;
+        }
+        .summary-card.profit-percent p {
+            color: #f59e0b;
+        }
+
         .summary-card.net-total {
             border-top-color: #059669;
             background-color: #ecfdf5;
         }
 
         .summary-card h3 {
-            font-size: 1.2rem;
+            /* تم تصغير حجم الخط للعناوين قليلاً */
+            font-size: 1.05rem; 
             color: #6b7280;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .summary-card p {
-            font-size: 2rem;
+            /* تم تصغير حجم أرقام المجاميع قليلاً لتتناسب مع الترتيب الجديد */
+            font-size: 1.6rem; 
             font-weight: 800;
             color: var(--text-main);
         }
@@ -229,6 +242,12 @@
             <div class="summary-card profit-total">
                 <h3>الربح الشهري الكلي</h3>
                 <p id="total-profit">0</p>
+            </div>
+
+            <!-- المربع الجديد لنسبة الربح الشهري -->
+            <div class="summary-card profit-percent">
+                <h3>نسبة الربح الشهري</h3>
+                <p id="total-profit-percent">0%</p>
             </div>
 
             <div class="summary-card">
@@ -283,7 +302,7 @@
             tbody.innerHTML = ''; 
 
             let monthlyTotalSales = 0;
-            let monthlyTotalProfit = 0;   // <-- المتغير الجديد لجمع الأرباح
+            let monthlyTotalProfit = 0;   
             let monthlyTotalExpenses = 0;
             let monthlyTotalNetIncome = 0;
 
@@ -302,7 +321,7 @@
                 const netDailyIncome = dayRecord.sales - dayRecord.expenses;
 
                 monthlyTotalSales += dayRecord.sales;
-                monthlyTotalProfit += dayRecord.profit; // <-- جمع الأرباح اليومية
+                monthlyTotalProfit += dayRecord.profit; 
                 monthlyTotalExpenses += dayRecord.expenses;
                 monthlyTotalNetIncome += netDailyIncome;
 
@@ -319,9 +338,16 @@
                 tbody.appendChild(tr);
             }
 
+            // حساب نسبة الربح الشهري
+            let profitPercentage = 0;
+            if (monthlyTotalSales > 0) {
+                profitPercentage = (monthlyTotalProfit / monthlyTotalSales) * 100;
+            }
+
             // تحديث القيم في البطاقات
             document.getElementById('total-sales').textContent = formatMoney(monthlyTotalSales);
-            document.getElementById('total-profit').textContent = formatMoney(monthlyTotalProfit); // <-- عرض مجموع الأرباح
+            document.getElementById('total-profit').textContent = formatMoney(monthlyTotalProfit); 
+            document.getElementById('total-profit-percent').textContent = profitPercentage.toFixed(2) + '%'; // عرض النسبة المئوية
             document.getElementById('total-expenses').textContent = formatMoney(monthlyTotalExpenses);
             document.getElementById('total-net').textContent = formatMoney(monthlyTotalNetIncome);
         }
