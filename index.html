@@ -24,9 +24,15 @@
             font-family: 'Tajawal', sans-serif;
         }
 
-        body {
+        html, body {
             background-color: var(--bg-color);
             color: var(--text-main);
+            /* منع تحرك الصفحة بأكملها يميناً ويساراً في الجوال */
+            overflow-x: hidden; 
+            width: 100%;
+        }
+
+        body {
             padding: 20px;
         }
 
@@ -71,6 +77,7 @@
             display: none;
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .controls {
@@ -106,15 +113,18 @@
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            /* تفعيل السحب للجدول فقط */
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             margin-bottom: 30px;
+            width: 100%;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            /* إجبار الجدول على أخذ مساحة واسعة ليظهر شريط السحب في الجوال */
+            min-width: 900px; 
         }
 
         thead {
@@ -145,14 +155,13 @@
 
         .summary-cards {
             display: grid;
-            /* تم التعديل هنا: 5 أعمدة لضمان بقائها في سطر واحد */
+            /* الافتراضي للكمبيوتر: 5 أعمدة */
             grid-template-columns: repeat(5, 1fr);
             gap: 15px; 
         }
 
         .summary-card {
             background: var(--card-bg);
-            /* تم تصغير الحشوة (padding) لتناسب الشاشة */
             padding: 15px 10px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -160,7 +169,6 @@
             border-top: 4px solid var(--primary-color);
         }
 
-        /* تنسيق خاص لبطاقة الأرباح */
         .summary-card.profit-total {
             border-top-color: #2563eb;
             background-color: #eff6ff;
@@ -169,7 +177,6 @@
             color: #2563eb;
         }
 
-        /* تنسيق خاص لبطاقة النسبة المئوية (الجديدة) */
         .summary-card.profit-percent {
             border-top-color: #f59e0b;
             background-color: #fffbeb;
@@ -184,14 +191,12 @@
         }
 
         .summary-card h3 {
-            /* تم تصغير حجم الخط للعناوين قليلاً */
             font-size: 1.05rem; 
             color: #6b7280;
             margin-bottom: 8px;
         }
 
         .summary-card p {
-            /* تم تصغير حجم أرقام المجاميع قليلاً لتتناسب مع الترتيب الجديد */
             font-size: 1.6rem; 
             font-weight: 800;
             color: var(--text-main);
@@ -199,6 +204,32 @@
 
         .summary-card.net-total p {
             color: #059669;
+        }
+
+        /* --- الأكواد الخاصة بشاشات الجوال والآيباد --- */
+        @media screen and (max-width: 992px) {
+            body {
+                padding: 10px; /* تقليل الحواف الجانبية لزيادة المساحة */
+            }
+
+            .header-title {
+                font-size: 1.5rem; /* تصغير العنوان ليتناسب مع الشاشة */
+                margin-bottom: 25px;
+            }
+
+            .month-title {
+                font-size: 1.4rem;
+            }
+
+            /* تحويل المربعات الخمسة لتصبح واحدة أسفل الأخرى في الجوال */
+            .summary-cards {
+                grid-template-columns: 1fr; 
+                gap: 10px;
+            }
+
+            .summary-card p {
+                font-size: 1.8rem; /* تكبير الرقم قليلاً في الجوال ليكون أوضح */
+            }
         }
     </style>
 </head>
@@ -244,7 +275,6 @@
                 <p id="total-profit">0</p>
             </div>
 
-            <!-- المربع الجديد لنسبة الربح الشهري -->
             <div class="summary-card profit-percent">
                 <h3>نسبة الربح الشهري</h3>
                 <p id="total-profit-percent">0%</p>
@@ -317,7 +347,6 @@
 
                 const dayRecord = monthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
                 
-                // صافي الدخل اليومي = المبيعات - الصرفيات
                 const netDailyIncome = dayRecord.sales - dayRecord.expenses;
 
                 monthlyTotalSales += dayRecord.sales;
@@ -338,16 +367,14 @@
                 tbody.appendChild(tr);
             }
 
-            // حساب نسبة الربح الشهري
             let profitPercentage = 0;
             if (monthlyTotalSales > 0) {
                 profitPercentage = (monthlyTotalProfit / monthlyTotalSales) * 100;
             }
 
-            // تحديث القيم في البطاقات
             document.getElementById('total-sales').textContent = formatMoney(monthlyTotalSales);
             document.getElementById('total-profit').textContent = formatMoney(monthlyTotalProfit); 
-            document.getElementById('total-profit-percent').textContent = profitPercentage.toFixed(2) + '%'; // عرض النسبة المئوية
+            document.getElementById('total-profit-percent').textContent = profitPercentage.toFixed(2) + '%';
             document.getElementById('total-expenses').textContent = formatMoney(monthlyTotalExpenses);
             document.getElementById('total-net').textContent = formatMoney(monthlyTotalNetIncome);
         }
