@@ -121,7 +121,7 @@ const pharmacyData = {
         "10": { sales: 30000, profit: 8250, expenses: 0, details: "-" },
         "11": { sales: 16500, profit: 4000, expenses: 0, details: "-" },
         "12": { sales: 12000, profit: 3000, expenses: 450000, details: "دفع أجار عيادة 450 الف" },
-        "13": { sales: 0, profit: 0, expenses: 0, details: "-" },
+        "13": { sales: 64500, profit: 11500, expenses: 205000, details: "دفع فلوس مولدة 180 ووطني 25" },
         "14": { sales: 0, profit: 0, expenses: 0, details: "-" },
         "15": { sales: 0, profit: 0, expenses: 0, details: "-" },
         "16": { sales: 0, profit: 0, expenses: 0, details: "-" },
@@ -171,5 +171,5 @@ const pharmacyData = {
         "28": { sales: 0, profit: 0, expenses: 0, details: "-" },
         "29": { sales: 0, profit: 0, expenses: 0, details: "-" },
         "30": { sales: 0, profit: 0, expenses: 0, details: "-" },
-          },
+          }
 };
