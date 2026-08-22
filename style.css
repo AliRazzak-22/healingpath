@@ -1,0 +1,115 @@
+/* style.css */
+:root {
+    --primary-color: #0d9488;
+    --primary-hover: #0f766e;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    
+    /* ألوان حالات الإستحقاق */
+    --status-red-bg: #fef2f2; --status-red-text: #991b1b;
+    --status-orange-bg: #fff7ed; --status-orange-text: #c2410c;
+    --status-yellow-bg: #fefce8; --status-yellow-text: #854d0e;
+    --status-green-bg: #f0fdf4; --status-green-text: #166534;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; }
+.hidden { display: none !important; }
+.hidden-screen { display: none !important; }
+.active-screen { display: block; padding: 20px; min-height: 100vh; }
+
+/* أزرار الإجراءات */
+.action-btn { padding: 12px 24px; font-size: 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s ease; border: none; }
+.action-btn.primary { background-color: var(--primary-color); color: white; }
+.action-btn.primary:hover { background-color: var(--primary-hover); }
+.action-btn.outline { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-main); }
+.action-btn.outline:hover { border-color: var(--text-main); }
+.action-btn.full-width { width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 10px; }
+
+/* البوابة الرئيسية */
+#portal-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+.portal-title { font-size: 3rem; color: var(--primary-color); margin-bottom: 10px; font-weight: 800; }
+.portal-subtitle { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; }
+.portal-buttons { display: flex; gap: 20px; }
+.btn-portal { padding: 30px 40px; font-size: 1.4rem; font-weight: 700; color: white; border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; width: 300px; text-align: center; }
+.btn-fin { background-color: #2563eb; }
+.btn-fin:hover { background-color: #1d4ed8; transform: translateY(-5px); box-shadow: 0 10px 15px rgba(37,99,235,0.2); }
+.btn-dues { background-color: var(--primary-color); }
+.btn-dues:hover { background-color: var(--primary-hover); transform: translateY(-5px); box-shadow: 0 10px 15px rgba(13,148,136,0.2); }
+
+/* الهيدر والتحكم */
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+.header-title { font-size: 2rem; color: var(--text-main); font-weight: 800; }
+.controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.month-title { font-size: 1.8rem; color: var(--primary-color); }
+
+/* عرض الأشهر */
+#months-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+.month-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 30px 20px; font-size: 1.5rem; font-weight: 700; color: var(--text-main); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.month-btn:hover { border-color: var(--primary-color); color: var(--primary-color); box-shadow: 0 8px 16px rgba(13,148,136,0.1); transform: translateY(-3px); }
+
+/* الجداول */
+.table-wrapper { background: var(--card-bg); border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 30px; border: 1px solid var(--border-color); }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+thead { background-color: #f8fafc; border-bottom: 2px solid var(--border-color); }
+th { padding: 18px 15px; text-align: right; color: var(--text-muted); font-weight: 700; font-size: 1rem; }
+td { padding: 18px 15px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 1.1rem; font-weight: 500; }
+tbody tr:hover { background-color: #f8fafc; }
+.highlight-net { font-weight: 800; color: #059669; }
+
+/* البطاقات الإحصائية */
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.summary-card { background: var(--card-bg); padding: 25px 20px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; border-top: 4px solid var(--primary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.summary-card h3 { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
+.summary-card p { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+.summary-card.profit-total { border-top-color: #2563eb; } .summary-card.profit-total p { color: #2563eb; }
+.summary-card.profit-percent { border-top-color: #f59e0b; } .summary-card.profit-percent p { color: #f59e0b; }
+.summary-card.net-total { border-top-color: #059669; } .summary-card.net-total p { color: #059669; }
+
+/* نظام الاستحقاقات */
+.nav-buttons { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+.nav-btn { padding: 10px 20px; font-size: 1.2rem; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted); border: none; position: relative; }
+.nav-btn.active { color: var(--primary-color); }
+.nav-btn.active::after { content: ''; position: absolute; bottom: -17px; left: 0; width: 100%; height: 4px; background-color: var(--primary-color); border-radius: 4px 4px 0 0; }
+.filters { display: flex; gap: 15px; margin-bottom: 20px; }
+select { padding: 12px; font-size: 1rem; border-radius: 8px; border: 1px solid var(--border-color); flex: 1; outline: none; font-family: inherit; }
+select:focus { border-color: var(--primary-color); }
+
+/* ألوان الجدول الخاصة بالاستحقاق */
+.status-red { background-color: var(--status-red-bg) !important; } .status-red td { color: var(--status-red-text); }
+.status-orange { background-color: var(--status-orange-bg) !important; } .status-orange td { color: var(--status-orange-text); }
+.status-yellow { background-color: var(--status-yellow-bg) !important; } .status-yellow td { color: var(--status-yellow-text); }
+.status-yellowgreen { background-color: var(--status-green-bg) !important; } .status-yellowgreen td { color: var(--status-green-text); }
+
+.add-cart-btn { background: var(--card-bg); border: 1px solid var(--border-color); font-weight: bold; color: var(--primary-color); padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+.add-cart-btn:hover { background: var(--primary-color); color: white; }
+.cart-summary { background: var(--card-bg); padding: 30px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--primary-color); box-shadow: 0 4px 12px rgba(13,148,136,0.1); }
+.cart-summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.highlight-text { color: var(--primary-color); font-weight: 800; }
+.cart-total { font-size: 2.5rem; font-weight: 800; color: #dc2626; margin-bottom: 10px; }
+.meta-text { color: var(--text-muted); font-size: 1.1rem; }
+.pay-btn { width: 100%; padding: 20px; font-size: 1.5rem; background: #059669; color: #fff; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; transition: 0.2s; }
+.pay-btn:hover { background: #047857; }
+
+/* ================= النوافذ المنبثقة (Glassmorphism Modals) ================= */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 1; transition: opacity 0.3s ease; }
+.modal-overlay.hidden { opacity: 0; pointer-events: none; }
+.modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 16px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); transform: translateY(0); transition: transform 0.3s ease; }
+.modal-overlay.hidden .modal-content { transform: translateY(20px); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.modal-header h2 { font-size: 1.5rem; color: var(--text-main); }
+.close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+.close-btn:hover { color: #ef4444; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+.form-group input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s; font-family: inherit; }
+.form-group input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+
+/* إشعار التنبيهات */
+.toast { visibility: hidden; min-width: 300px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; left: 50%; transform: translateX(-50%); bottom: 30px; font-size: 1.1rem; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+.toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
