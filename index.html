@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التقارير المالية | صيدلية درب الشفاء</title>
+    <title>بوابة صيدلية درب الشفاء</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     
+    <!-- مكتبات فايربيس -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
+        /* ================= ستايل النظام القديم الأساسي ================= */
         :root {
             --primary-color: #0d9488;
             --secondary-color: #0f766e;
@@ -16,295 +21,216 @@
             --border-color: #e5e7eb;
             --hover-bg: #f9fafb;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        html, body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; width: 100%; }
+        body { padding: 20px; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-        }
+        /* ================= الشاشة الرئيسية (البوابة) ================= */
+        #portal-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
+        .portal-title { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 40px; text-align: center; }
+        .portal-buttons { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .btn-portal { padding: 30px 50px; font-size: 22px; font-weight: bold; color: white; border: none; border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-portal:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+        .btn-fin { background-color: #2563eb; }
+        .btn-dues { background-color: #059669; }
+        
+        .return-main-btn { background-color: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; font-size: 1.1rem; }
+        .return-main-btn:hover { background-color: #dc2626; }
 
-        html, body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            /* منع تحرك الصفحة بأكملها يميناً ويساراً في الجوال */
-            overflow-x: hidden; 
-            width: 100%;
-        }
+        /* ================= ستايل النظام المالي (كما هو) ================= */
+        .header-title { text-align: center; font-size: 2.2rem; font-weight: 800; color: var(--primary-color); margin-bottom: 20px; }
+        #months-view { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .month-btn { background: var(--card-bg); border: 2px solid var(--border-color); padding: 25px 20px; font-size: 1.4rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; }
+        .month-btn:hover { border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-3px); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { background-color: var(--text-main); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .table-wrapper { background: var(--card-bg); border-radius: 12px; overflow-x: auto; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        thead { background-color: var(--primary-color); color: white; }
+        th, td { padding: 16px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 1.1rem; }
+        .highlight-net { font-weight: bold; color: #059669; }
+        .summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        .summary-card { background: var(--card-bg); padding: 15px 10px; border-radius: 12px; text-align: center; border-top: 4px solid var(--primary-color); }
+        
+        /* ================= ستايل نظام المذاخر الجديد ================= */
+        .nav-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .nav-btn { padding: 12px 25px; font-size: 18px; font-weight: bold; cursor: pointer; background: #374151; color: #fff; border: none; border-radius: 8px; }
+        .nav-btn.active { background: #059669; }
+        .filters { display: flex; gap: 15px; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; }
+        select { padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; flex: 1; }
+        
+        .status-red { background-color: #ffcccc !important; color: #990000; font-weight: bold; } 
+        .status-orange { background-color: #ffe5b4 !important; color: #cc5500; font-weight: bold; } 
+        .status-yellow { background-color: #ffffcc !important; color: #888800; font-weight: bold; } 
+        .status-yellowgreen { background-color: #d9ffcc !important; color: #2d8800; font-weight: bold; } 
 
-        body {
-            padding: 20px;
-        }
+        .add-cart-btn { background: none; border: none; font-size: 24px; cursor: pointer; transition: transform 0.2s; }
+        .add-cart-btn:hover { transform: scale(1.2); }
+        .cart-summary { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 2px dashed #059669; }
+        .cart-total { font-size: 36px; font-weight: bold; color: #dc2626; margin: 10px 0; }
+        .pay-btn { width: 100%; padding: 20px; font-size: 24px; background: #059669; color: #fff; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .hidden { display: none !important; }
+        .history-btn { background: #4b5563; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;}
 
-        .header-title {
-            text-align: center;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 40px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
-        }
-
-        #months-view {
-            max-width: 800px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .month-btn {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            padding: 25px 20px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-main);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .month-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        #table-view {
-            display: none;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            background-color: var(--text-main);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .back-btn:hover {
-            background-color: #374151;
-        }
-
-        .month-title {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .table-wrapper {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            /* تفعيل السحب للجدول فقط */
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-bottom: 30px;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            /* إجبار الجدول على أخذ مساحة واسعة ليظهر شريط السحب في الجوال */
-            min-width: 900px; 
-        }
-
-        thead {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        th, td {
-            padding: 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 1.1rem;
-        }
-
-        th {
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        tbody tr:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .highlight-net {
-            font-weight: bold;
-            color: #059669;
-        }
-
-        .summary-cards {
-            display: grid;
-            /* الافتراضي للكمبيوتر: 5 أعمدة */
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px; 
-        }
-
-        .summary-card {
-            background: var(--card-bg);
-            padding: 15px 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: center;
-            border-top: 4px solid var(--primary-color);
-        }
-
-        .summary-card.profit-total {
-            border-top-color: #2563eb;
-            background-color: #eff6ff;
-        }
-        .summary-card.profit-total p {
-            color: #2563eb;
-        }
-
-        .summary-card.profit-percent {
-            border-top-color: #f59e0b;
-            background-color: #fffbeb;
-        }
-        .summary-card.profit-percent p {
-            color: #f59e0b;
-        }
-
-        .summary-card.net-total {
-            border-top-color: #059669;
-            background-color: #ecfdf5;
-        }
-
-        .summary-card h3 {
-            font-size: 1.05rem; 
-            color: #6b7280;
-            margin-bottom: 8px;
-        }
-
-        .summary-card p {
-            font-size: 1.6rem; 
-            font-weight: 800;
-            color: var(--text-main);
-        }
-
-        .summary-card.net-total p {
-            color: #059669;
-        }
-
-        /* --- الأكواد الخاصة بشاشات الجوال والآيباد --- */
         @media screen and (max-width: 992px) {
-            body {
-                padding: 10px; /* تقليل الحواف الجانبية لزيادة المساحة */
-            }
-
-            .header-title {
-                font-size: 1.5rem; /* تصغير العنوان ليتناسب مع الشاشة */
-                margin-bottom: 25px;
-            }
-
-            .month-title {
-                font-size: 1.4rem;
-            }
-
-            /* تحويل المربعات الخمسة لتصبح واحدة أسفل الأخرى في الجوال */
-            .summary-cards {
-                grid-template-columns: 1fr; 
-                gap: 10px;
-            }
-
-            .summary-card p {
-                font-size: 1.8rem; /* تكبير الرقم قليلاً في الجوال ليكون أوضح */
-            }
+            .summary-cards { grid-template-columns: 1fr; }
+            .btn-portal { padding: 20px 30px; font-size: 18px; width: 100%; }
+            .portal-buttons { flex-direction: column; width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <h1 class="header-title">التقارير المالية الشهرية لصيدلية درب الشفاء</h1>
-
-    <div id="months-view">
+    <!-- ================= 1. شاشة البوابة الرئيسية ================= -->
+    <div id="portal-screen">
+        <h1 class="portal-title">بوابة أنظمة الصيدلية</h1>
+        <div class="portal-buttons">
+            <button class="btn-portal btn-fin" onclick="openSystem('financial')">📊 التقارير والحسابات المالية</button>
+            <button class="btn-portal btn-dues" onclick="openSystem('dues')">🏢 إستحقاقات وتسديدات المذاخر</button>
         </div>
+    </div>
 
-    <div id="table-view">
-        <div class="controls">
-            <button class="back-btn" onclick="showMonthsView()">⟵ رجوع</button>
-            <h2 class="month-title" id="current-month-title">شهر 5 - 2026</h2>
-        </div>
+    <!-- ================= 2. النظام المالي القديم (كما هو) ================= -->
+    <div id="financial-system" class="hidden">
+        <button class="return-main-btn" onclick="openSystem('portal')">🏠 العودة للشاشة الرئيسية</button>
+        <h1 class="header-title">التقارير المالية الشهرية لصيدلية درب الشفاء</h1>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>اليوم</th>
-                        <th>التاريخ</th>
-                        <th>المبيعات اليومية</th>
-                        <th>الربح الصافي</th>
-                        <th>الصرفيات / التسديدات</th>
-                        <th>التفاصيل</th>
-                        <th>صافي الدخل اليومي</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    </tbody>
-            </table>
-        </div>
+        <div id="months-view"></div>
 
-        <div class="summary-cards">
-            <div class="summary-card">
-                <h3>المبيعات الشهرية الكلية</h3>
-                <p id="total-sales">0</p>
-            </div>
-            
-            <div class="summary-card profit-total">
-                <h3>الربح الشهري الكلي</h3>
-                <p id="total-profit">0</p>
+        <div id="table-view" class="hidden">
+            <div class="controls">
+                <button class="back-btn" onclick="showMonthsView()">⟵ رجوع للأشهر</button>
+                <h2 class="month-title" id="current-month-title">شهر 5 - 2026</h2>
             </div>
 
-            <div class="summary-card profit-percent">
-                <h3>نسبة الربح الشهري</h3>
-                <p id="total-profit-percent">0%</p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اليوم</th><th>التاريخ</th><th>المبيعات اليومية</th><th>الربح الصافي</th><th>الصرفيات</th><th>التفاصيل</th><th>صافي الدخل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
             </div>
 
-            <div class="summary-card">
-                <h3>الصرفيات والتسديدات الشهرية</h3>
-                <p id="total-expenses">0</p>
-            </div>
-            <div class="summary-card net-total">
-                <h3>صافي الوارد الشهري</h3>
-                <p id="total-net">0</p>
+            <div class="summary-cards">
+                <div class="summary-card"><h3>المبيعات</h3><p id="total-sales">0</p></div>
+                <div class="summary-card profit-total"><h3>الربح</h3><p id="total-profit">0</p></div>
+                <div class="summary-card profit-percent"><h3>نسبة الربح</h3><p id="total-profit-percent">0%</p></div>
+                <div class="summary-card"><h3>الصرفيات</h3><p id="total-expenses">0</p></div>
+                <div class="summary-card net-total"><h3>صافي الوارد</h3><p id="total-net">0</p></div>
             </div>
         </div>
     </div>
 
-    <script src="data.js"></script>
+    <!-- ================= 3. نظام إستحقاقات المذاخر الجديد ================= -->
+    <div id="dues-system" class="hidden">
+        <button class="return-main-btn" onclick="openSystem('portal')">🏠 العودة للشاشة الرئيسية</button>
+        <h1 class="header-title">إستحقاقات المذاخر</h1>
 
+        <div class="nav-buttons">
+            <button class="nav-btn active" id="btn-tab-invoices" onclick="switchDuesTab('invoices')">📑 القوائم والمستحقات</button>
+            <button class="nav-btn" id="btn-tab-cart" onclick="switchDuesTab('cart')">🛒 سلة التسديد</button>
+        </div>
+
+        <!-- القوائم -->
+        <div id="invoices-section">
+            <div class="filters">
+                <select id="wholesaler-filter" onchange="renderInvoices()">
+                    <option value="all">كل المذاخر</option>
+                </select>
+                <select id="status-filter" onchange="renderInvoices()">
+                    <option value="all">كل الحالات</option>
+                    <option value="red">تجاوز فترة الإستحقاق</option>
+                    <option value="orange">مستحق التسديد</option>
+                    <option value="yellow">تسديد إختياري (< 20 يوم)</option>
+                    <option value="yellowgreen">تسديد إختياري (> 20 يوم)</option>
+                </select>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>الحالة</th><th>إضافة</th></tr>
+                    </thead>
+                    <tbody id="invoices-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- السلة -->
+        <div id="cart-section" class="hidden">
+            <div class="cart-summary">
+                <h2>المذخر: <span id="cart-wholesaler-name" style="color:var(--primary-color)">---</span></h2>
+                <div class="cart-total">المبلغ الكلي: <span id="cart-total-amount">0</span> د.ع</div>
+                <h4 id="next-payment-info" style="color: #6b7280; margin-bottom:15px;"></h4>
+                <button class="history-btn" onclick="showHistory()">📜 عرض السلات السابقة</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody id="cart-body"></tbody>
+                </table>
+            </div>
+            <button class="pay-btn" onclick="checkout()">تم التسديد ✔️</button>
+        </div>
+    </div>
+
+
+    <!-- ================= استدعاء ملفات الداتا ================= -->
+    <script src="data.js"></script>
+    <script src="dues_data.js"></script>
+
+    <!-- ================= الكود البرمجي المدمج ================= -->
     <script>
-        const daysInArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        // ---------------------------------------------------------
+        // 1. إعدادات Firebase - ضع بيانات مشروعك هنا!
+        // ---------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtz6MiAPW5I1BDNqJXMe-q8CgOrsEfC10",
+            authDomain: "healingpath-51637.firebaseapp.com",
+            databaseURL: "https://healingpath-51637-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "healingpath-51637",
+            storageBucket: "healingpath-51637.firebasestorage.app",
+            messagingSenderId: "247914857779",
+            appId: "1:247914857779:web:1c0e49c02d3ce6f109aa46",
+            measurementId: "G-J9RBTGLVV2"
+        };
         
+        // تشغيل فايربيس
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // ---------------------------------------------------------
+        // 2. منطق التنقل بين الأنظمة (البوابة)
+        // ---------------------------------------------------------
+        function openSystem(sys) {
+            document.getElementById('portal-screen').style.display = sys === 'portal' ? 'flex' : 'none';
+            document.getElementById('financial-system').classList.toggle('hidden', sys !== 'financial');
+            document.getElementById('dues-system').classList.toggle('hidden', sys !== 'dues');
+            
+            if (sys === 'financial') initFinancial();
+            if (sys === 'dues') initDues();
+        }
+
+        // ---------------------------------------------------------
+        // 3. كود النظام المالي القديم (بالضبط كما صممته أنت)
+        // ---------------------------------------------------------
+        const daysInArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
         const monthsToDisplay = [
-            { year: 2026, month: 5 },
-            { year: 2026, month: 6 },
-            { year: 2026, month: 7 },
-            { year: 2026, month: 8 }
+            { year: 2026, month: 5 }, { year: 2026, month: 6 },
+            { year: 2026, month: 7 }, { year: 2026, month: 8 }
         ];
 
-        function init() {
+        function initFinancial() {
             const monthsContainer = document.getElementById('months-view');
+            monthsContainer.innerHTML = ''; // تنظيف لتجنب التكرار
             monthsToDisplay.forEach(item => {
                 const btn = document.createElement('button');
                 btn.className = 'month-btn';
@@ -312,6 +238,7 @@
                 btn.onclick = () => openMonthReport(item.year, item.month);
                 monthsContainer.appendChild(btn);
             });
+            showMonthsView();
         }
 
         function showMonthsView() {
@@ -319,9 +246,7 @@
             document.getElementById('months-view').style.display = 'grid';
         }
 
-        function formatMoney(number) {
-            return number.toLocaleString('en-US');
-        }
+        function formatMoney(number) { return number.toLocaleString('en-US'); }
 
         function openMonthReport(year, month) {
             document.getElementById('months-view').style.display = 'none';
@@ -331,11 +256,7 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = ''; 
 
-            let monthlyTotalSales = 0;
-            let monthlyTotalProfit = 0;   
-            let monthlyTotalExpenses = 0;
-            let monthlyTotalNetIncome = 0;
-
+            let mSales = 0, mProfit = 0, mExpenses = 0, mNet = 0;
             const daysInMonth = new Date(year, month, 0).getDate();
             const dataKey = `${year}/${month}`;
             const monthData = (typeof pharmacyData !== 'undefined' && pharmacyData[dataKey]) ? pharmacyData[dataKey] : {};
@@ -343,43 +264,178 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateObj = new Date(year, month - 1, day);
                 const dayName = daysInArabic[dateObj.getDay()];
-                const fullDate = `${year}/${month}/${day}`;
-
                 const dayRecord = monthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
-                
-                const netDailyIncome = dayRecord.sales - dayRecord.expenses;
+                const netDaily = dayRecord.sales - dayRecord.expenses;
 
-                monthlyTotalSales += dayRecord.sales;
-                monthlyTotalProfit += dayRecord.profit; 
-                monthlyTotalExpenses += dayRecord.expenses;
-                monthlyTotalNetIncome += netDailyIncome;
+                mSales += dayRecord.sales; mProfit += dayRecord.profit; 
+                mExpenses += dayRecord.expenses; mNet += netDaily;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${dayName}</td>
-                    <td>${fullDate}</td>
-                    <td>${formatMoney(dayRecord.sales)}</td>
-                    <td>${formatMoney(dayRecord.profit)}</td>
-                    <td>${formatMoney(dayRecord.expenses)}</td>
-                    <td>${dayRecord.details}</td>
-                    <td class="highlight-net">${formatMoney(netDailyIncome)}</td>
-                `;
-                tbody.appendChild(tr);
+                tbody.innerHTML += `<tr>
+                    <td>${dayName}</td><td>${year}/${month}/${day}</td>
+                    <td>${formatMoney(dayRecord.sales)}</td><td>${formatMoney(dayRecord.profit)}</td>
+                    <td>${formatMoney(dayRecord.expenses)}</td><td>${dayRecord.details}</td>
+                    <td class="highlight-net">${formatMoney(netDaily)}</td>
+                </tr>`;
             }
-
-            let profitPercentage = 0;
-            if (monthlyTotalSales > 0) {
-                profitPercentage = (monthlyTotalProfit / monthlyTotalSales) * 100;
-            }
-
-            document.getElementById('total-sales').textContent = formatMoney(monthlyTotalSales);
-            document.getElementById('total-profit').textContent = formatMoney(monthlyTotalProfit); 
-            document.getElementById('total-profit-percent').textContent = profitPercentage.toFixed(2) + '%';
-            document.getElementById('total-expenses').textContent = formatMoney(monthlyTotalExpenses);
-            document.getElementById('total-net').textContent = formatMoney(monthlyTotalNetIncome);
+            document.getElementById('total-sales').textContent = formatMoney(mSales);
+            document.getElementById('total-profit').textContent = formatMoney(mProfit); 
+            document.getElementById('total-profit-percent').textContent = (mSales>0 ? (mProfit/mSales)*100 : 0).toFixed(2) + '%';
+            document.getElementById('total-expenses').textContent = formatMoney(mExpenses);
+            document.getElementById('total-net').textContent = formatMoney(mNet);
         }
 
-        window.onload = init;
+        // ---------------------------------------------------------
+        // 4. كود نظام المذاخر الجديد (مرتبط بـ Firebase)
+        // ---------------------------------------------------------
+        let cart = [];
+        let paidInvoices = [];
+        let cartsHistory = [];
+
+        // الاستماع الدائم للبيانات من السيرفر (التزامن اللحظي)
+        database.ref('dues_system').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                paidInvoices = data.paidInvoices || [];
+                cartsHistory = data.cartsHistory || [];
+            }
+            // تحديث الشاشة فوراً إذا كان النظام مفتوحاً
+            if (!document.getElementById('dues-system').classList.contains('hidden')) {
+                renderInvoices();
+                if (!document.getElementById('cart-section').classList.contains('hidden')) renderCart();
+            }
+        });
+
+        function initDues() {
+            populateFilters();
+            renderInvoices();
+        }
+
+        function calculateStatus(dateStr, validDays) {
+            const dueDate = new Date(dateStr);
+            dueDate.setDate(dueDate.getDate() + validDays);
+            const today = new Date();
+            today.setHours(0,0,0,0); dueDate.setHours(0,0,0,0);
+            const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) return { category: 'red', text: 'تجاوز فترة الإستحقاق', days: diffDays };
+            if (diffDays >= 0 && diffDays <= 10) return { category: 'orange', text: `مستحق التسديد (باقي ${diffDays} يوم)`, days: diffDays };
+            if (diffDays > 10 && diffDays < 20) return { category: 'yellow', text: `تسديد إختياري (باقي ${diffDays} يوم)`, days: diffDays };
+            return { category: 'yellowgreen', text: `تسديد إختياري (باقي ${diffDays} يوم)`, days: diffDays };
+        }
+
+        function processInvoices() {
+            if(typeof duesInvoicesData === 'undefined') return [];
+            return duesInvoicesData
+                .filter(inv => !paidInvoices.includes(inv.id)) // إخفاء المسددة الموجودة في السيرفر
+                .map(inv => ({ ...inv, status: calculateStatus(inv.date, inv.validDays) }))
+                .sort((a, b) => a.status.days - b.status.days);
+        }
+
+        function populateFilters() {
+            if(typeof duesInvoicesData === 'undefined') return;
+            const wholesalers = [...new Set(duesInvoicesData.map(inv => inv.wholesaler))];
+            const select = document.getElementById('wholesaler-filter');
+            select.innerHTML = '<option value="all">كل المذاخر</option>';
+            wholesalers.forEach(w => select.innerHTML += `<option value="${w}">${w}</option>`);
+        }
+
+        function renderInvoices() {
+            const tbody = document.getElementById('invoices-body');
+            tbody.innerHTML = '';
+            const wFilter = document.getElementById('wholesaler-filter').value;
+            const sFilter = document.getElementById('status-filter').value;
+            
+            let invoices = processInvoices();
+            if(wFilter !== 'all') invoices = invoices.filter(inv => inv.wholesaler === wFilter);
+            if(sFilter !== 'all') invoices = invoices.filter(inv => inv.status.category === sFilter);
+
+            let count = 1;
+            invoices.forEach(inv => {
+                if(cart.some(c => c.id === inv.id)) return;
+                tbody.innerHTML += `
+                    <tr class="status-${inv.status.category}">
+                        <td>${count++}</td><td>${inv.wholesaler}</td><td>${inv.date}</td>
+                        <td>${formatMoney(inv.amount)}</td><td>${inv.status.text}</td>
+                        <td><button class="add-cart-btn" onclick="addToCart(${inv.id})">🛒</button></td>
+                    </tr>`;
+            });
+        }
+
+        function addToCart(id) {
+            const inv = duesInvoicesData.find(i => i.id === id);
+            if (cart.length > 0 && cart[0].wholesaler !== inv.wholesaler) {
+                return alert("خطأ: لا يمكن جمع أكثر من مذخر في سلة واحدة!");
+            }
+            cart.push(inv);
+            renderInvoices();
+            if(!document.getElementById('cart-section').classList.contains('hidden')) renderCart();
+            alert(`تم إضافة قائمة ${inv.wholesaler} للسلة!`);
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cart-body');
+            tbody.innerHTML = '';
+            let total = 0;
+            cart.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((inv, i) => {
+                const status = calculateStatus(inv.date, inv.validDays);
+                total += inv.amount;
+                tbody.innerHTML += `
+                    <tr class="status-${status.category}">
+                        <td>${i + 1}</td><td>${inv.wholesaler}</td><td>${inv.date}</td>
+                        <td>${formatMoney(inv.amount)}</td><td>${status.text}</td>
+                    </tr>`;
+            });
+            document.getElementById('cart-total-amount').innerText = formatMoney(total);
+            document.getElementById('cart-wholesaler-name').innerText = cart.length > 0 ? cart[0].wholesaler : '---';
+            
+            // حساب القائمة القادمة
+            const infoText = document.getElementById('next-payment-info');
+            if(cart.length === 0) { infoText.innerText = ''; return; }
+            const remaining = processInvoices().filter(inv => inv.wholesaler === cart[0].wholesaler && !cart.some(c => c.id === inv.id));
+            infoText.innerText = remaining.length > 0 ? `التاريخ المتوقع للتسديد القادم: ${remaining[0].status.text}` : "لا توجد قوائم قادمة مستحقة لهذا المذخر.";
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("السلة فارغة!");
+            if(confirm("هل أنت متأكد من التسديد؟ سيتم حفظ العملية في السيرفر لجميع الأجهزة.")) {
+                cart.forEach(inv => paidInvoices.push(inv.id));
+                cartsHistory.push({
+                    datePaid: new Date().toLocaleDateString('en-GB'),
+                    wholesaler: cart[0].wholesaler,
+                    total: cart.reduce((sum, inv) => sum + inv.amount, 0),
+                    invoices: [...cart]
+                });
+
+                // رفع البيانات للسيرفر!
+                database.ref('dues_system').set({
+                    paidInvoices: paidInvoices,
+                    cartsHistory: cartsHistory
+                }).then(() => {
+                    cart = []; 
+                    switchDuesTab('invoices');
+                    alert("تم التسديد وحفظ السلة بنجاح في السيرفر السحابي!");
+                }).catch(error => {
+                    alert("حدث خطأ في الاتصال بالإنترنت: " + error);
+                });
+            }
+        }
+
+        function showHistory() {
+            if(cartsHistory.length === 0) return alert("لا توجد سلات سابقة.");
+            let msg = "السلات السابقة:\n\n";
+            cartsHistory.forEach((h, i) => {
+                msg += `${i+1}. المذخر: ${h.wholesaler} | بتاريخ: ${h.datePaid} | المبلغ: ${formatMoney(h.total)}\n`;
+            });
+            alert(msg);
+        }
+
+        function switchDuesTab(tab) {
+            document.getElementById('invoices-section').classList.toggle('hidden', tab !== 'invoices');
+            document.getElementById('cart-section').classList.toggle('hidden', tab !== 'cart');
+            document.getElementById('btn-tab-invoices').classList.toggle('active', tab === 'invoices');
+            document.getElementById('btn-tab-cart').classList.toggle('active', tab === 'cart');
+            if(tab === 'cart') renderCart();
+        }
     </script>
 </body>
 </html>
