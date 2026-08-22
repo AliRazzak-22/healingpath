@@ -119,7 +119,7 @@ function renderMonthsView() {
     months.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'month-btn';
-        btn.textContent = `شهر ${item.month} - ${item.year}`;
+        btn.textContent = `${item.month} - ${item.year}`;
         btn.onclick = () => { currentFinMonth = item.key; openMonthReport(item.year, item.month); };
         container.appendChild(btn);
     });
