@@ -153,7 +153,10 @@ function openMonthReport(year, month) {
         const dateObj = new Date(year, month - 1, day);
         const dayName = daysInArabic[dateObj.getDay()];
         
+        // الأولوية للداتا السحابية، ثم القديمة، ثم أصفار
         const dayRecord = cloudMonthData[day] || legacyMonthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
+        
+        // لا نعرض الأيام المستقبلية الفارغة بالكامل
         if(dayRecord.sales === 0 && dayRecord.expenses === 0 && new Date() < dateObj) continue;
 
         const netDaily = dayRecord.sales - dayRecord.expenses;
@@ -176,6 +179,13 @@ function openMonthReport(year, month) {
             </td>
         </tr>`;
     }
+
+    document.getElementById('total-sales').textContent = formatMoney(mSales);
+    document.getElementById('total-profit').textContent = formatMoney(mProfit); 
+    document.getElementById('total-profit-percent').textContent = (mSales > 0 ? (mProfit/mSales)*100 : 0).toFixed(2) + '%';
+    document.getElementById('total-expenses').textContent = formatMoney(mExpenses);
+    document.getElementById('total-net').textContent = formatMoney(mNet);
+}
         
         // الأولوية للداتا السحابية، ثم القديمة، ثم أصفار
         const dayRecord = cloudMonthData[day] || legacyMonthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
