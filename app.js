@@ -186,12 +186,6 @@ function openMonthReport(year, month) {
     document.getElementById('total-expenses').textContent = formatMoney(mExpenses);
     document.getElementById('total-net').textContent = formatMoney(mNet);
 }
-        
-        // الأولوية للداتا السحابية، ثم القديمة، ثم أصفار
-        const dayRecord = cloudMonthData[day] || legacyMonthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
-        
-        // لا نعرض الأيام المستقبلية الفارغة بالكامل
-        if(dayRecord.sales === 0 && dayRecord.expenses === 0 && new Date() < dateObj) continue;
 
         const netDaily = dayRecord.sales - dayRecord.expenses;
         mSales += dayRecord.sales; mProfit += dayRecord.profit; 
