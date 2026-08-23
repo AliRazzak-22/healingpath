@@ -153,6 +153,30 @@ function openMonthReport(year, month) {
         const dateObj = new Date(year, month - 1, day);
         const dayName = daysInArabic[dateObj.getDay()];
         
+        const dayRecord = cloudMonthData[day] || legacyMonthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
+        if(dayRecord.sales === 0 && dayRecord.expenses === 0 && new Date() < dateObj) continue;
+
+        const netDaily = dayRecord.sales - dayRecord.expenses;
+        mSales += dayRecord.sales; mProfit += dayRecord.profit; 
+        mExpenses += dayRecord.expenses; mNet += netDaily;
+        
+        const editSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+        const delSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+        tbody.innerHTML += `<tr>
+            <td>${dayName}</td><td>${year}/${month}/${day}</td>
+            <td>${formatMoney(dayRecord.sales)}</td><td>${formatMoney(dayRecord.profit)}</td>
+            <td>${formatMoney(dayRecord.expenses)}</td><td>${dayRecord.details || '-'}</td>
+            <td class="highlight-net">${formatMoney(netDaily)}</td>
+            <td>
+                <div class="actions-cell">
+                    <button class="icon-btn icon-edit" onclick="editFinRecord('${year}_${month}', ${day}, ${dayRecord.sales}, ${dayRecord.profit}, ${dayRecord.expenses}, '${dayRecord.details || ''}')">${editSvg}</button>
+                    <button class="icon-btn icon-delete" onclick="deleteFinRecord('${year}_${month}', ${day})">${delSvg}</button>
+                </div>
+            </td>
+        </tr>`;
+    }
+        
         // الأولوية للداتا السحابية، ثم القديمة، ثم أصفار
         const dayRecord = cloudMonthData[day] || legacyMonthData[day] || { sales: 0, profit: 0, expenses: 0, details: "-" };
         
@@ -202,7 +226,28 @@ function submitFinancialRecord(e) {
         })
         .catch(err => alert("حدث خطأ أثناء الحفظ."));
 }
+function editFinRecord(monthKey, day, sales, profit, expenses, details) {
+    const yyyy = monthKey.split('_')[0];
+    const mm = String(monthKey.split('_')[1]).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    
+    document.getElementById('fin-date').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('fin-sales').value = sales;
+    document.getElementById('fin-profit').value = profit;
+    document.getElementById('fin-expenses').value = expenses;
+    document.getElementById('fin-details').value = details !== '-' ? details : '';
+    document.getElementById('fin-modal-title').innerText = "تعديل السجل اليومي";
+    openModal('fin-modal');
+}
 
+function deleteFinRecord(monthKey, day) {
+    if(confirm("هل أنت متأكد من تصفير سجلات هذا اليوم؟")) {
+        const record = { sales: 0, profit: 0, expenses: 0, details: "-" };
+        db.ref(`financial_records/${monthKey}/${day}`).set(record).then(() => {
+            showToast("تم تصفير السجل بنجاح!");
+        });
+    }
+}
 // ---------------------------------------------------------
 // نظام إستحقاقات المذاخر: المنطق
 // ---------------------------------------------------------
@@ -251,23 +296,82 @@ function renderInvoices() {
     if(wFilter !== 'all') invoices = invoices.filter(inv => inv.wholesaler === wFilter);
     if(sFilter !== 'all') invoices = invoices.filter(inv => inv.status.category === sFilter);
 
+    const editSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+    const delSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
     let count = 1;
     invoices.forEach(inv => {
         if(cart.some(c => c.id === inv.id)) return;
+        const remainingText = inv.remainingAmount ? formatMoney(inv.remainingAmount) : ''; // يترك فارغاً إذا لم يكن هناك متبقي
+        
         tbody.innerHTML += `
             <tr class="status-${inv.status.category}">
                 <td>${count++}</td><td>${inv.wholesaler}</td><td>${inv.date}</td>
-                <td>${formatMoney(inv.amount)}</td><td>${inv.status.text}</td>
-                <td><button class="add-cart-btn" onclick="addToCart('${inv.id}')">إضافة للسلة</button></td>
+                <td>${formatMoney(inv.amount)}</td><td style="color: #dc2626; font-weight:bold;">${remainingText}</td><td>${inv.status.text}</td>
+                <td>
+                    <div class="actions-cell">
+                        <button class="add-cart-btn" onclick="addToCart('${inv.id}')" style="margin-left: 5px;">+ سلة</button>
+                        <button class="icon-btn icon-edit" onclick="editInvoice('${inv.id}')">${editSvg}</button>
+                        <button class="icon-btn icon-delete" onclick="deleteInvoice('${inv.id}')">${delSvg}</button>
+                    </div>
+                </td>
             </tr>`;
     });
 }
 
+function renderCart() {
+    const tbody = document.getElementById('cart-body');
+    tbody.innerHTML = '';
+    let total = 0;
+    cart.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((inv, i) => {
+        const status = calculateStatus(inv.date, inv.validDays);
+        const effectiveAmount = inv.remainingAmount ? inv.remainingAmount : inv.amount;
+        total += effectiveAmount;
+        
+        const remainingText = inv.remainingAmount ? formatMoney(inv.remainingAmount) : '';
+        tbody.innerHTML += `
+            <tr class="status-${status.category}">
+                <td>${i + 1}</td><td>${inv.wholesaler}</td><td>${inv.date}</td>
+                <td>${formatMoney(inv.amount)}</td><td style="color: #dc2626; font-weight:bold;">${remainingText}</td><td>${status.text}</td>
+            </tr>`;
+    });
+    document.getElementById('cart-total-amount').innerText = formatMoney(total);
+    document.getElementById('cart-wholesaler-name').innerText = cart.length > 0 ? cart[0].wholesaler : '---';
+}
+
+function openInvoiceModal() {
+    document.getElementById('invoice-form').reset();
+    document.getElementById('inv-edit-id').value = '';
+    document.getElementById('inv-modal-title').innerText = "إضافة قائمة شراء جديدة";
+    openModal('invoice-modal');
+}
+
+function editInvoice(id) {
+    const inv = cloudInvoices.find(i => i.id === id);
+    if(inv) {
+        document.getElementById('inv-edit-id').value = inv.id;
+        document.getElementById('inv-wholesaler').value = inv.wholesaler;
+        document.getElementById('inv-date').value = inv.date;
+        document.getElementById('inv-amount').value = inv.amount;
+        document.getElementById('inv-remaining').value = inv.remainingAmount || '';
+        document.getElementById('inv-days').value = inv.validDays;
+        document.getElementById('inv-modal-title').innerText = "تعديل قائمة الشراء";
+        openModal('invoice-modal');
+    }
+}
+
+function deleteInvoice(id) {
+    if(confirm("تحذير: هل أنت متأكد من حذف هذه القائمة بشكل نهائي؟")) {
+        db.ref(`dues_invoices/${id}`).remove().then(() => showToast("تم حذف القائمة!"));
+    }
+}
+
 function submitInvoiceRecord(e) {
     e.preventDefault();
-    // توليد معرف احترافي وفريد
-    const uniqueId = 'INV-' + Date.now().toString().slice(-6) + '-' + Math.floor(Math.random() * 1000);
+    const editId = document.getElementById('inv-edit-id').value;
+    const uniqueId = editId ? editId : 'INV-' + Date.now().toString().slice(-6) + '-' + Math.floor(Math.random() * 100);
     
+    const remVal = document.getElementById('inv-remaining').value;
     const record = {
         id: uniqueId,
         wholesaler: document.getElementById('inv-wholesaler').value,
@@ -275,15 +379,14 @@ function submitInvoiceRecord(e) {
         amount: parseFloat(document.getElementById('inv-amount').value),
         validDays: parseInt(document.getElementById('inv-days').value)
     };
+    if (remVal && parseFloat(remVal) > 0) record.remainingAmount = parseFloat(remVal);
 
-    db.ref(`dues_invoices/${uniqueId}`).set(record)
-        .then(() => {
-            closeModal('invoice-modal');
-            document.getElementById('invoice-form').reset();
-            populateFilters();
-            showToast("تم إضافة القائمة بنجاح!");
-        })
-        .catch(err => alert("حدث خطأ أثناء الحفظ."));
+    db.ref(`dues_invoices/${uniqueId}`).set(record).then(() => {
+        closeModal('invoice-modal');
+        document.getElementById('invoice-form').reset();
+        populateFilters();
+        showToast(editId ? "تم التعديل بنجاح!" : "تم إضافة القائمة بنجاح!");
+    });
 }
 
 function addToCart(id) {
@@ -295,28 +398,6 @@ function addToCart(id) {
     renderInvoices();
     if(!document.getElementById('cart-section').classList.contains('hidden')) renderCart();
     showToast(`تم إضافة قائمة ${inv.wholesaler} للسلة`);
-}
-
-function renderCart() {
-    const tbody = document.getElementById('cart-body');
-    tbody.innerHTML = '';
-    let total = 0;
-    cart.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((inv, i) => {
-        const status = calculateStatus(inv.date, inv.validDays);
-        total += inv.amount;
-        tbody.innerHTML += `
-            <tr class="status-${status.category}">
-                <td>${i + 1}</td><td>${inv.wholesaler}</td><td>${inv.date}</td>
-                <td>${formatMoney(inv.amount)}</td><td>${status.text}</td>
-            </tr>`;
-    });
-    document.getElementById('cart-total-amount').innerText = formatMoney(total);
-    document.getElementById('cart-wholesaler-name').innerText = cart.length > 0 ? cart[0].wholesaler : '---';
-    
-    const infoText = document.getElementById('next-payment-info');
-    if(cart.length === 0) { infoText.innerText = ''; return; }
-    const remaining = processInvoices().filter(inv => inv.wholesaler === cart[0].wholesaler && !cart.some(c => c.id === inv.id));
-    infoText.innerText = remaining.length > 0 ? `تاريخ التسديد القادم المتوقع: ${remaining[0].status.text}` : "جميع قوائم هذا المذخر مسددة أو مضافة للسلة.";
 }
 
 function checkout() {
@@ -346,4 +427,103 @@ function showHistory() {
         msg += `تسديد رقم ${i+1} | المذخر: ${h.wholesaler} | التاريخ: ${h.datePaid} | المبلغ: ${formatMoney(h.total)}\n`;
     });
     alert(msg);
+}
+// ================= خوارزمية السداد التلقائي (Auto-Cart) =================
+function openAutoCartModal() {
+    const wholesalers = [...new Set(processInvoices().map(inv => inv.wholesaler))];
+    const select = document.getElementById('auto-wholesaler');
+    select.innerHTML = '';
+    wholesalers.forEach(w => select.innerHTML += `<option value="${w}">${w}</option>`);
+    
+    document.getElementById('auto-cart-form').reset();
+    document.getElementById('auto-total-power').innerText = "0 د.ع";
+    openModal('auto-cart-modal');
+}
+
+function syncDiscount(changedField) {
+    const payment = parseFloat(document.getElementById('auto-payment').value) || 0;
+    const percentInput = document.getElementById('auto-discount-percent');
+    const valInput = document.getElementById('auto-discount-val');
+    
+    if (changedField === 'percent') {
+        const p = parseFloat(percentInput.value) || 0;
+        valInput.value = payment > 0 ? ((payment * p) / 100).toFixed(0) : '';
+    } else if (changedField === 'val') {
+        const v = parseFloat(valInput.value) || 0;
+        percentInput.value = payment > 0 ? ((v / payment) * 100).toFixed(2) : '';
+    }
+    
+    const finalVal = parseFloat(valInput.value) || 0;
+    document.getElementById('auto-total-power').innerText = formatMoney(payment + finalVal) + " د.ع";
+}
+
+function executeAutoCart(e) {
+    e.preventDefault();
+    const wholesaler = document.getElementById('auto-wholesaler').value;
+    const payment = parseFloat(document.getElementById('auto-payment').value) || 0;
+    const discount = parseFloat(document.getElementById('auto-discount-val').value) || 0;
+    
+    let buyingPower = payment + discount;
+    if (buyingPower <= 0) return alert("مبلغ التسديد غير صالح!");
+    
+    // جلب قوائم المذخر المحدد فقط، وترتيبها من الأقدم للأحدث (FIFO)
+    let targetInvoices = processInvoices()
+        .filter(inv => inv.wholesaler === wholesaler)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+    if (targetInvoices.length === 0) return alert("لا توجد قوائم مستحقة لهذا المذخر.");
+
+    let updates = {}; // لتحديث الفايربيس دفعة واحدة
+    let localPaid = [...paidInvoices];
+    let totalAssigned = 0;
+
+    for (let i = 0; i < targetInvoices.length; i++) {
+        if (buyingPower <= 0) break;
+        
+        let inv = targetInvoices[i];
+        let debt = inv.remainingAmount ? inv.remainingAmount : inv.amount;
+        
+        if (buyingPower >= debt) {
+            // تسديد القائمة بالكامل
+            buyingPower -= debt;
+            totalAssigned += debt;
+            localPaid.push(inv.id);
+            // إذا كان بها متبقي سابق، نزيله من الداتابيس لتنظيفها
+            if(inv.remainingAmount) {
+                let updatedInv = {...inv};
+                delete updatedInv.remainingAmount;
+                delete updatedInv.status; // لا نحفظ الحالة المحسوبة
+                updates[`dues_invoices/${inv.id}`] = updatedInv;
+            }
+        } else {
+            // تسديد جزئي للقائمة (نصل هنا والمبلغ يصفر بعدها)
+            let newRemaining = debt - buyingPower;
+            totalAssigned += buyingPower;
+            buyingPower = 0;
+            
+            let updatedInv = {...inv, remainingAmount: newRemaining};
+            delete updatedInv.status; // لا نحفظ الحالة المحسوبة في الداتابيس
+            updates[`dues_invoices/${inv.id}`] = updatedInv;
+        }
+    }
+
+    if (totalAssigned === 0) return;
+
+    // أرشفة العملية
+    cartsHistory.push({
+        datePaid: new Date().toLocaleDateString('en-GB'),
+        wholesaler: wholesaler,
+        total: totalAssigned,
+        type: "Auto-Cart"
+    });
+
+    // تحديث قاعدة البيانات دفعة واحدة لضمان الاستقرار
+    db.ref().update({
+        'dues_system/paidInvoices': localPaid,
+        'dues_system/cartsHistory': cartsHistory,
+        ...updates
+    }).then(() => {
+        closeModal('auto-cart-modal');
+        showToast("تم تنفيذ السداد التلقائي وترحيل المبالغ بنجاح!");
+    }).catch(err => alert("حدث خطأ في الشبكة."));
 }
