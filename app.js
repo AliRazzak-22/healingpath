@@ -187,25 +187,6 @@ function openMonthReport(year, month) {
     document.getElementById('total-net').textContent = formatMoney(mNet);
 }
 
-        const netDaily = dayRecord.sales - dayRecord.expenses;
-        mSales += dayRecord.sales; mProfit += dayRecord.profit; 
-        mExpenses += dayRecord.expenses; mNet += netDaily;
-
-        tbody.innerHTML += `<tr>
-            <td>${dayName}</td><td>${year}/${month}/${day}</td>
-            <td>${formatMoney(dayRecord.sales)}</td><td>${formatMoney(dayRecord.profit)}</td>
-            <td>${formatMoney(dayRecord.expenses)}</td><td>${dayRecord.details || '-'}</td>
-            <td class="highlight-net">${formatMoney(netDaily)}</td>
-        </tr>`;
-    }
-
-    document.getElementById('total-sales').textContent = formatMoney(mSales);
-    document.getElementById('total-profit').textContent = formatMoney(mProfit); 
-    document.getElementById('total-profit-percent').textContent = (mSales > 0 ? (mProfit/mSales)*100 : 0).toFixed(2) + '%';
-    document.getElementById('total-expenses').textContent = formatMoney(mExpenses);
-    document.getElementById('total-net').textContent = formatMoney(mNet);
-}
-
 function submitFinancialRecord(e) {
     e.preventDefault();
     const dateVal = document.getElementById('fin-date').value;
