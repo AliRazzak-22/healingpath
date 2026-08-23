@@ -153,7 +153,15 @@ select:focus { border-color: var(--primary-color); }
 
 @media screen and (max-width: 768px) {
     .active-screen { padding: 10px; }
-    
+    /* ================= أزرار الإجراءات (Edit / Delete Icons) ================= */
+.actions-cell { display: flex; gap: 8px; justify-content: flex-end; }
+.icon-btn { background: none; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; cursor: pointer; transition: 0.2s; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+.icon-btn:hover { background-color: var(--bg-color); }
+.icon-edit:hover { color: #2563eb; border-color: #2563eb; background-color: #eff6ff; }
+.icon-delete:hover { color: #dc2626; border-color: #dc2626; background-color: #fef2f2; }
+
+/* حقول السلة التلقائية */
+.split-group { display: flex; gap: 15px; }
     /* جعل البطاقات الإحصائية واحدة أسفل الأخرى */
     .summary-cards { grid-template-columns: 1fr; }
     
