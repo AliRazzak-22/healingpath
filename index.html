@@ -31,7 +31,10 @@
         <div class="top-bar">
             <button class="action-btn outline" onclick="openSystem('portal')">العودة للبوابة</button>
             <h1 class="header-title">التقارير المالية</h1>
-            <button class="action-btn primary" onclick="openModal('fin-modal')">إضافة مبيعات يومية</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn outline" onclick="openAutoCartModal()" style="border-color: var(--primary-color); color: var(--primary-color);">السلة التلقائية</button>
+                <button class="action-btn primary" onclick="openInvoiceModal()">إضافة قائمة جديدة</button>
+            </div>
         </div>
 
         <div id="months-view">
@@ -48,7 +51,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>اليوم</th><th>التاريخ</th><th>المبيعات اليومية</th><th>الربح الصافي</th><th>الصرفيات</th><th>التفاصيل</th><th>صافي الدخل</th>
+                            <th>اليوم</th><th>التاريخ</th><th>المبيعات اليومية</th><th>الربح الصافي</th><th>الصرفيات</th><th>التفاصيل</th><th>صافي الدخل</th><th style="width: 100px;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="table-body"></tbody>
@@ -96,7 +99,7 @@
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>الحالة</th><th>الإجراء</th></tr>
+                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>المتبقي</th><th>الحالة</th></tr>
                     </thead>
                     <tbody id="invoices-body"></tbody>
                 </table>
@@ -117,7 +120,7 @@
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>الحالة</th></tr>
+                        <tr><th>#</th><th>اسم المذخر</th><th>تاريخ الشراء</th><th>مبلغ القائمة</th><th>المتبقي</th><th>الحالة</th><th style="width: 150px;">الإجراءات</th></tr>
                     </thead>
                     <tbody id="cart-body"></tbody>
                 </table>
@@ -126,37 +129,107 @@
         </div>
     </div>
 
-    <!-- ================= النوافذ المنبثقة (Modals) ================= -->
+   <!-- ================= النوافذ المنبثقة (Modals) ================= -->
     
     <!-- نافذة المبيعات -->
     <div id="fin-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>إدخال السجلات اليومية</h2>
+                <h2 id="fin-modal-title">إدخال السجلات اليومية</h2>
                 <button class="close-btn" onclick="closeModal('fin-modal')">×</button>
             </div>
             <form id="fin-form" onsubmit="submitFinancialRecord(event)">
+                <input type="hidden" id="fin-edit-key"> <!-- مفتاح التعديل السري -->
                 <div class="form-group">
                     <label>تاريخ اليوم:</label>
                     <input type="date" id="fin-date" required>
                 </div>
                 <div class="form-group">
                     <label>المبيعات الكلية:</label>
-                    <input type="number" id="fin-sales" required min="0" placeholder="مثال: 150000">
+                    <input type="number" id="fin-sales" required min="0">
                 </div>
                 <div class="form-group">
                     <label>الربح الصافي:</label>
-                    <input type="number" id="fin-profit" required min="0" placeholder="مثال: 35000">
+                    <input type="number" id="fin-profit" required min="0">
                 </div>
                 <div class="form-group">
                     <label>الصرفيات:</label>
-                    <input type="number" id="fin-expenses" required min="0" placeholder="مثال: 5000">
+                    <input type="number" id="fin-expenses" required min="0">
                 </div>
                 <div class="form-group">
                     <label>تفاصيل الصرفيات (إن وجدت):</label>
-                    <input type="text" id="fin-details" placeholder="مثال: ضيافة، إنترنت...">
+                    <input type="text" id="fin-details">
                 </div>
                 <button type="submit" class="action-btn primary full-width">حفظ في السحابة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة إستحقاقات المذاخر -->
+    <div id="invoice-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="inv-modal-title">إضافة قائمة شراء جديدة</h2>
+                <button class="close-btn" onclick="closeModal('invoice-modal')">×</button>
+            </div>
+            <form id="invoice-form" onsubmit="submitInvoiceRecord(event)">
+                <input type="hidden" id="inv-edit-id"> <!-- مفتاح التعديل السري -->
+                <div class="form-group">
+                    <label>اسم المذخر:</label>
+                    <input type="text" id="inv-wholesaler" required>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ قائمة الشراء:</label>
+                    <input type="date" id="inv-date" required>
+                </div>
+                <div class="form-group">
+                    <label>مبلغ القائمة الكلي:</label>
+                    <input type="number" id="inv-amount" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ المتبقي (اختياري - في حال السداد الجزئي المسبق):</label>
+                    <input type="number" id="inv-remaining" min="1" placeholder="يترك فارغاً إذا لم يتم تسديد جزء منها">
+                </div>
+                <div class="form-group">
+                    <label>فترة الإستحقاق (بالأيام):</label>
+                    <input type="number" id="inv-days" required min="1">
+                </div>
+                <button type="submit" class="action-btn primary full-width">حفظ القائمة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة السلة التلقائية (الجديدة كلياً) -->
+    <div id="auto-cart-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>السداد التلقائي الذكي</h2>
+                <button class="close-btn" onclick="closeModal('auto-cart-modal')">×</button>
+            </div>
+            <form id="auto-cart-form" onsubmit="executeAutoCart(event)">
+                <div class="form-group">
+                    <label>اختيار المذخر:</label>
+                    <select id="auto-wholesaler" required></select>
+                </div>
+                <div class="form-group">
+                    <label>المبلغ المراد تسديده (د.ع):</label>
+                    <input type="number" id="auto-payment" required min="1" oninput="syncDiscount()">
+                </div>
+                <div class="form-group split-group">
+                    <div style="flex: 1;">
+                        <label>الخصم الحاصل (نسبة %):</label>
+                        <input type="number" id="auto-discount-percent" min="0" step="0.01" oninput="syncDiscount('percent')">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>الخصم الحاصل (مبلغ د.ع):</label>
+                        <input type="number" id="auto-discount-val" min="0" oninput="syncDiscount('val')">
+                    </div>
+                </div>
+                <div class="cart-summary" style="padding: 15px; margin-top: 15px;">
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">إجمالي قوة التسديد (المبلغ + الخصم):</p>
+                    <h3 id="auto-total-power" style="color: var(--primary-color);">0 د.ع</h3>
+                </div>
+                <button type="submit" class="action-btn primary full-width" style="background-color: #2563eb;">تنفيذ السداد التلقائي</button>
             </form>
         </div>
     </div>
