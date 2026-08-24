@@ -67,8 +67,8 @@ body {
     background: var(--card-bg); 
     border-radius: 12px; 
     overflow-x: auto; 
-    -webkit-overflow-scrolling: touch; /* لسلاسة السحب في الآيفون والآيباد */
-    width: 100%; /* يجبر الحاوية على عدم تجاوز الشاشة */
+    -webkit-overflow-scrolling: touch; 
+    width: 100%; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
     margin-bottom: 30px; 
     border: 1px solid var(--border-color); 
@@ -76,7 +76,7 @@ body {
 table { 
     width: 100%; 
     border-collapse: collapse; 
-    min-width: 900px; /* يحافظ على عرض الجدول لتتمكن من سحبه */
+    min-width: 900px; 
     max-width: none; 
 }
 thead { background-color: #f8fafc; border-bottom: 2px solid var(--border-color); }
@@ -91,7 +91,6 @@ tbody tr:hover { background-color: #f8fafc; }
 .summary-card h3 { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; }
 .summary-card p { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
 
-/* الألوان الجديدة المريحة للعين */
 .summary-card.profit-total { background-color: #eff6ff; border-color: #bfdbfe; } 
 .summary-card.profit-total h3, .summary-card.profit-total p { color: #1e3a8a; }
 
@@ -110,7 +109,6 @@ tbody tr:hover { background-color: #f8fafc; }
 select { padding: 12px; font-size: 1rem; border-radius: 8px; border: 1px solid var(--border-color); flex: 1; outline: none; font-family: inherit; }
 select:focus { border-color: var(--primary-color); }
 
-/* ألوان الجدول الخاصة بالاستحقاق */
 .status-red { background-color: var(--status-red-bg) !important; } .status-red td { color: var(--status-red-text); }
 .status-orange { background-color: var(--status-orange-bg) !important; } .status-orange td { color: var(--status-orange-text); }
 .status-yellow { background-color: var(--status-yellow-bg) !important; } .status-yellow td { color: var(--status-yellow-text); }
@@ -145,15 +143,8 @@ select:focus { border-color: var(--primary-color); }
 .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
 @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-/* ================= التكيف مع الشاشات (Responsive Design) ================= */
-@media screen and (max-width: 992px) {
-    .portal-buttons { flex-direction: column; align-items: center; }
-    .btn-portal { width: 100%; max-width: 400px; }
-}
 
-@media screen and (max-width: 768px) {
-    .active-screen { padding: 10px; }
-    /* ================= أزرار الإجراءات (Edit / Delete Icons) ================= */
+/* ================= أزرار الإجراءات (Edit / Delete Icons) ================= */
 .actions-cell { display: flex; gap: 8px; justify-content: flex-end; }
 .icon-btn { background: none; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; cursor: pointer; transition: 0.2s; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
 .icon-btn:hover { background-color: var(--bg-color); }
@@ -226,6 +217,7 @@ select:focus { border-color: var(--primary-color); }
 .chevron { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.3s; }
 .accordion-item.open .chevron { transform: rotate(180deg); }
 
+
 /* ================= الطباعة (Print Media Queries) ================= */
 .print-only { display: none !important; }
 @media print {
@@ -256,4 +248,5 @@ select:focus { border-color: var(--primary-color); }
     .header-title { font-size: 1.6rem; }
     .month-title { font-size: 1.4rem; }
     .modal-content { padding: 20px; width: 95%; }
+    .doc-info-grid { grid-template-columns: 1fr; }
 }
