@@ -20,10 +20,10 @@
     <div id="portal-screen" class="active-screen">
         <h1 class="portal-title">نظام صيدلية درب الشفاء</h1>
         <p class="portal-subtitle">اختر النظام المطلوب للمتابعة</p>
-        <div class="portal-buttons">
-            <button class="btn-portal btn-fin" onclick="openSystem('financial')">التقارير المالية</button>
-            <button class="btn-portal btn-dues" onclick="openSystem('dues')">تسديدات المذاخر</button>
-            <button class="btn-portal" onclick="openSystem('doctors')" style="background-color: #8b5cf6;">إدارة الأطباء</button>
+        <<div class="portal-buttons">
+            <button class="btn-portal btn-fin" onclick="openSystem('financial')">التقارير والحسابات المالية</button>
+            <button class="btn-portal btn-dues" onclick="openSystem('dues')">إستحقاقات وتسديدات المذاخر</button>
+            <button class="btn-portal btn-docs" onclick="openSystem('doctors')">إدارة الأطباء</button>
         </div>
     </div>
 
@@ -292,15 +292,51 @@
                         </div>
                     </div>
                 </div>
+                <!-- شبكة بطاقات معلومات الطبيب الهندسية -->
                 <div class="doc-info-grid">
-                    <p><strong>الإختصاص:</strong> <span id="view-doc-spec">---</span></p>
-                    <p><strong>تاريخ المباشرة:</strong> <span id="view-doc-start">---</span></p>
-                    <p><strong>العقد المالي:</strong> <span id="view-doc-contract">---</span></p>
-                    <p><strong>العطلة الأسبوعية:</strong> <span id="view-doc-off">---</span></p>
+                    <div class="info-card-modern">
+                        <div class="info-icon-wrapper" style="background: #e0e7ff; color: #4f46e5;">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <div class="info-text-wrapper">
+                            <span class="info-label-modern">الإختصاص الطبي</span>
+                            <strong id="view-doc-spec" class="info-value-modern">---</strong>
+                        </div>
+                    </div>
+
+                    <div class="info-card-modern">
+                        <div class="info-icon-wrapper" style="background: #dcfce7; color: #16a34a;">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div class="info-text-wrapper">
+                            <span class="info-label-modern">تاريخ المباشرة</span>
+                            <strong id="view-doc-start" class="info-value-modern">---</strong>
+                        </div>
+                    </div>
+
+                    <div class="info-card-modern">
+                        <div class="info-icon-wrapper" style="background: #fef9c3; color: #ca8a04;">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <div class="info-text-wrapper">
+                            <span class="info-label-modern">العقد المالي</span>
+                            <strong id="view-doc-contract" class="info-value-modern">---</strong>
+                        </div>
+                    </div>
+
+                    <div class="info-card-modern">
+                        <div class="info-icon-wrapper" style="background: #fee2e2; color: #dc2626;">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path></svg>
+                        </div>
+                        <div class="info-text-wrapper">
+                            <span class="info-label-modern">العطلة الأسبوعية</span>
+                            <strong id="view-doc-off" class="info-value-modern">---</strong>
+                        </div>
+                    </div>
                 </div>
                 <div class="doc-actions-row">
                     <button class="action-btn primary" onclick="openDocRecordModal()" style="background-color: #8b5cf6;">إضافة معلومات يومية</button>
-                    <button class="action-btn outline" onclick="openBonusesModal()" style="border-color: #ec4899; color: #ec4899;">🎁 بونصات الطبيب</button>
+                    <button class="action-btn outline" onclick="openBonusesModal()" style="border-color: #ec4899; color: #ec4899;">بونصات الطبيب</button>
                 </div>
             </div>
 
