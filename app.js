@@ -63,17 +63,20 @@ function openSystem(sys) {
     document.getElementById('portal-screen').classList.replace('active-screen', 'hidden-screen');
     document.getElementById('financial-system').classList.replace('active-screen', 'hidden-screen');
     document.getElementById('dues-system').classList.replace('active-screen', 'hidden-screen');
+    document.getElementById('doctors-system').classList.replace('active-screen', 'hidden-screen');
 
     if (sys === 'portal') document.getElementById('portal-screen').classList.replace('hidden-screen', 'active-screen');
     else if (sys === 'financial') {
         document.getElementById('financial-system').classList.replace('hidden-screen', 'active-screen');
-        currentFinMonth = '';
-        renderMonthsView();
+        currentFinMonth = ''; renderMonthsView();
     }
     else if (sys === 'dues') {
         document.getElementById('dues-system').classList.replace('hidden-screen', 'active-screen');
-        populateFilters();
-        renderInvoices();
+        populateFilters(); renderInvoices();
+    }
+    else if (sys === 'doctors') {
+        document.getElementById('doctors-system').classList.replace('hidden-screen', 'active-screen');
+        renderDoctorsTabs();
     }
 }
 
@@ -511,4 +514,244 @@ function executeAutoCart(e) {
         closeModal('auto-cart-modal');
         showToast("تم تنفيذ السداد التلقائي وترحيل المبالغ بنجاح!");
     }).catch(err => alert("حدث خطأ في الشبكة."));
+}
+
+// =========================================================
+// 5. نظام إدارة الأطباء والمجمعات (العقل المدبر)
+// =========================================================
+let cloudDoctors = {};
+let cloudDocRecords = {};
+let cloudBonuses = {};
+let currentDocId = null;
+
+// مزامنة الداتا
+db.ref('doctors').on('value', snap => { cloudDoctors = snap.val() || {}; if(currentSystem === 'doctors') renderDoctorsTabs(); });
+db.ref('doctor_records').on('value', snap => { cloudDocRecords = snap.val() || {}; if(currentSystem === 'doctors' && currentDocId) renderDoctorMonths(); });
+db.ref('doctor_bonuses').on('value', snap => { cloudBonuses = snap.val() || {}; if(currentSystem === 'doctors' && currentDocId && !document.getElementById('bonuses-modal').classList.contains('hidden')) renderBonuses(); });
+
+function renderDoctorsTabs() {
+    const container = document.getElementById('doctors-tabs-container');
+    container.innerHTML = '';
+    const docs = Object.values(cloudDoctors);
+    
+    docs.forEach(doc => {
+        const btn = document.createElement('button');
+        btn.className = `nav-btn ${currentDocId === doc.id ? 'active' : ''}`;
+        btn.innerText = `د. ${doc.name}`;
+        btn.onclick = () => { currentDocId = doc.id; renderDoctorsTabs(); renderDoctorProfile(); renderDoctorMonths(); };
+        container.appendChild(btn);
+    });
+    
+    if(!currentDocId && docs.length > 0) {
+        currentDocId = docs[0].id;
+        renderDoctorsTabs(); renderDoctorProfile(); renderDoctorMonths();
+    }
+    
+    document.getElementById('doctor-workspace').classList.toggle('hidden', docs.length === 0);
+}
+
+function renderDoctorProfile() {
+    const doc = cloudDoctors[currentDocId];
+    if(!doc) return;
+    document.getElementById('view-doc-name').innerText = `د. ${doc.name}`;
+    document.getElementById('view-doc-spec').innerText = doc.spec;
+    document.getElementById('view-doc-start').innerText = doc.startDate;
+    document.getElementById('view-doc-contract').innerText = doc.contract || 'لا يوجد';
+    document.getElementById('view-doc-off').innerText = doc.offDays || 'لا يوجد';
+    document.getElementById('doc-settings-menu').classList.add('hidden');
+}
+
+function submitDoctor(e) {
+    e.preventDefault();
+    const id = document.getElementById('doc-id').value || 'DOC-' + Date.now();
+    const offDays = Array.from(document.querySelectorAll('#doc-off-days input:checked')).map(cb => cb.value).join('، ');
+    
+    const record = {
+        id: id, name: document.getElementById('doc-name').value,
+        spec: document.getElementById('doc-spec').value,
+        startDate: document.getElementById('doc-start').value,
+        contract: document.getElementById('doc-contract').value,
+        offDays: offDays
+    };
+    db.ref(`doctors/${id}`).set(record).then(() => { closeModal('add-doc-modal'); showToast("تم حفظ بيانات الطبيب!"); });
+}
+
+function editCurrentDoctor() {
+    const doc = cloudDoctors[currentDocId];
+    document.getElementById('doc-id').value = doc.id;
+    document.getElementById('doc-name').value = doc.name;
+    document.getElementById('doc-spec').value = doc.spec;
+    document.getElementById('doc-start').value = doc.startDate;
+    document.getElementById('doc-contract').value = doc.contract || '';
+    
+    document.querySelectorAll('#doc-off-days input').forEach(cb => { cb.checked = doc.offDays.includes(cb.value); });
+    document.getElementById('doc-modal-title').innerText = "تعديل معلومات الطبيب";
+    document.getElementById('doc-settings-menu').classList.add('hidden');
+    openModal('add-doc-modal');
+}
+
+// ---- سجلات الطبيب والأكورديون ----
+function openDocRecordModal(date = '', recipes = '', sales = '', profit = '', reqCost = '0', reqDet = '', ads = '0') {
+    document.getElementById('doc-record-form').reset();
+    document.getElementById('drec-date').value = date; document.getElementById('drec-recipes').value = recipes;
+    document.getElementById('drec-sales').value = sales; document.getElementById('drec-profit').value = profit;
+    document.getElementById('drec-req-cost').value = reqCost; document.getElementById('drec-req-det').value = reqDet;
+    document.getElementById('drec-ads').value = ads;
+    openModal('doc-record-modal');
+}
+
+function submitDocRecord(e) {
+    e.preventDefault();
+    const dateVal = document.getElementById('drec-date').value;
+    const [y, m, d] = dateVal.split('-');
+    const monthKey = `${y}_${parseInt(m)}`;
+    const dayKey = parseInt(d);
+
+    const record = {
+        recipes: parseInt(document.getElementById('drec-recipes').value),
+        sales: parseFloat(document.getElementById('drec-sales').value),
+        profit: parseFloat(document.getElementById('drec-profit').value),
+        reqCost: parseFloat(document.getElementById('drec-req-cost').value),
+        reqDet: document.getElementById('drec-req-det').value || '-',
+        adsCost: parseFloat(document.getElementById('drec-ads').value)
+    };
+    db.ref(`doctor_records/${currentDocId}/${monthKey}/${dayKey}`).set(record).then(() => { closeModal('doc-record-modal'); showToast("تم حفظ اليومية!"); });
+}
+
+function deleteDocRecord(monthKey, dayKey) {
+    if(confirm("تأكيد تصفير ومسح بيانات هذا اليوم؟")) db.ref(`doctor_records/${currentDocId}/${monthKey}/${dayKey}`).remove().then(() => showToast("تم المسح!"));
+}
+
+function toggleAccordion(id) {
+    const body = document.getElementById(id);
+    const item = body.parentElement;
+    body.classList.toggle('hidden'); item.classList.toggle('open');
+}
+
+function renderDoctorMonths() {
+    const container = document.getElementById('doc-months-accordion');
+    container.innerHTML = '';
+    const records = cloudDocRecords[currentDocId] || {};
+    const months = Object.keys(records).sort((a,b) => b.localeCompare(a)); // الأحدث أولاً
+    
+    if(months.length === 0) { container.innerHTML = '<p style="text-align:center; color:#888;">لا توجد سجلات بعد.</p>'; return; }
+
+    const editSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+    const delSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+    months.forEach(monthKey => {
+        const [y, m] = monthKey.split('_');
+        const days = records[monthKey];
+        let totalNet = 0; let rowsHtml = '';
+        
+        Object.keys(days).sort((a,b)=>a-b).forEach(d => {
+            const data = days[d];
+            const netProfit = data.profit - data.reqCost - data.adsCost;
+            const profitPercent = data.sales > 0 ? ((data.profit / data.sales) * 100).toFixed(1) + '%' : '0%';
+            totalNet += netProfit;
+            const fullDate = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            
+            rowsHtml += `<tr>
+                <td>${d}/${m}/${y}</td><td>${data.recipes}</td><td>${formatMoney(data.sales)}</td>
+                <td>${formatMoney(data.profit)}</td><td style="color:#8b5cf6; font-weight:bold;">${profitPercent}</td>
+                <td>${formatMoney(data.reqCost)}</td><td>${data.reqDet}</td><td>${formatMoney(data.adsCost)}</td>
+                <td class="highlight-net">${formatMoney(netProfit)}</td>
+                <td class="no-print">
+                    <div class="actions-cell">
+                        <button class="icon-btn icon-edit" onclick="openDocRecordModal('${fullDate}', ${data.recipes}, ${data.sales}, ${data.profit}, ${data.reqCost}, '${data.reqDet}', ${data.adsCost})">${editSvg}</button>
+                        <button class="icon-btn icon-delete" onclick="deleteDocRecord('${monthKey}', ${d})">${delSvg}</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+
+        const accItem = document.createElement('div');
+        accItem.className = 'accordion-item';
+        accItem.innerHTML = `
+            <div class="accordion-header" onclick="toggleAccordion('acc-${monthKey}')">
+                <h3>شهر ${m} - ${y} <span style="font-size:14px; color:var(--text-muted); margin-right:10px;">(الصافي: <span style="color:#059669">${formatMoney(totalNet)}</span> د.ع)</span></h3>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button class="action-btn outline no-print" onclick="event.stopPropagation(); printDoctorReport('${monthKey}', '${totalNet}')" style="padding: 5px 15px;">🖨️ طباعة</button>
+                    <span class="chevron">▼</span>
+                </div>
+            </div>
+            <div class="accordion-body hidden" id="acc-${monthKey}">
+                <div class="table-wrapper"><table id="table-print-${monthKey}">
+                    <thead><tr><th>التاريخ</th><th>الوصفات</th><th>المبيعات</th><th>الربح اليومي</th><th>% الربح</th><th>طلبات د.</th><th>تفاصيل الطلب</th><th>اعلانات</th><th>الربح الصافي</th><th class="no-print">إجراء</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table></div>
+            </div>`;
+        container.appendChild(accItem);
+    });
+}
+
+// ---- البونصات ----
+function openBonusesModal() { renderBonuses(); openModal('bonuses-modal'); }
+function submitBonus(e) {
+    e.preventDefault();
+    const id = 'BON-' + Date.now();
+    const record = {
+        name: document.getElementById('bon-name').value, buy: parseFloat(document.getElementById('bon-buy').value),
+        sell: parseFloat(document.getElementById('bon-sell').value), count: parseInt(document.getElementById('bon-count').value),
+        date: document.getElementById('bon-date').value, status: 'active'
+    };
+    db.ref(`doctor_bonuses/${currentDocId}/${id}`).set(record).then(() => { closeModal('add-bonus-modal'); showToast("تم حفظ البونص!"); });
+}
+
+function renderBonuses() {
+    const tbody = document.getElementById('active-bonuses-body');
+    tbody.innerHTML = '';
+    const bonuses = Object.entries(cloudBonuses[currentDocId] || {}).map(([id, data]) => ({id, ...data})).filter(b => b.status === 'active');
+    
+    bonuses.forEach(b => {
+        const profit = b.sell * b.count;
+        tbody.innerHTML += `<tr>
+            <td>${b.name}</td><td>${formatMoney(b.buy)}</td><td>${formatMoney(b.sell)}</td><td>${b.count}</td><td>${b.date}</td>
+            <td style="color:#059669; font-weight:bold;">${formatMoney(profit)}</td>
+            <td><button class="add-cart-btn" onclick="markBonusSpent('${b.id}')" style="color:#ec4899; border-color:#ec4899;">تم الصرف</button></td>
+        </tr>`;
+    });
+}
+
+function markBonusSpent(id) {
+    if(confirm("تأكيد صرف هذا البونص؟")) {
+        db.ref(`doctor_bonuses/${currentDocId}/${id}/status`).set('spent').then(() => {
+            db.ref(`doctor_bonuses/${currentDocId}/${id}/spentDate`).set(new Date().toLocaleDateString('en-GB'));
+            showToast("تم صرف البونص ونقله للأرشيف!");
+        });
+    }
+}
+
+function renderPrevBonuses() {
+    const tbody = document.getElementById('prev-bonuses-body');
+    tbody.innerHTML = '';
+    const bonuses = Object.entries(cloudBonuses[currentDocId] || {}).map(([id, data]) => ({id, ...data})).filter(b => b.status === 'spent');
+    
+    bonuses.forEach(b => {
+        tbody.innerHTML += `<tr>
+            <td>${b.name}</td><td>${formatMoney(b.sell)}</td><td>${b.count}</td>
+            <td style="color:#059669; font-weight:bold;">${formatMoney(b.sell * b.count)}</td><td>${b.spentDate}</td>
+            <td><button class="icon-btn icon-delete" onclick="if(confirm('حذف نهائي؟')) db.ref('doctor_bonuses/${currentDocId}/${b.id}').remove();">🗑️</button></td>
+        </tr>`;
+    });
+}
+
+// ---- الطباعة السحرية ----
+function printDoctorReport(monthKey, totalNet) {
+    const docName = cloudDoctors[currentDocId].name;
+    const [y, m] = monthKey.split('_');
+    
+    document.getElementById('print-doc-title').innerText = `تقرير: د. ${docName}`;
+    document.getElementById('print-month-title').innerText = `لشهر ${m} - ${y} | إجمالي الربح الصافي: ${formatMoney(totalNet)} د.ع`;
+    
+    // نسخ الجدول بدون أعمدة (الإجراءات)
+    const originalTable = document.getElementById(`table-print-${monthKey}`);
+    const printContent = document.getElementById('print-content');
+    printContent.innerHTML = originalTable.outerHTML;
+    
+    // إخفاء أعمدة no-print من نسخة الطباعة فقط
+    const noPrintElements = printContent.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.style.display = 'none');
+    
+    window.print();
 }
