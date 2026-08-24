@@ -30,6 +30,7 @@ let cloudInvoices = [];
 let paidInvoices = [];
 let cartsHistory = [];
 let cart = [];
+let currentDisplayedDebt = 0; // يستخدم لأنيميشن عداد الديون
 
 // ---------------------------------------------------------
 // مزامنة حية من Firebase (Real-time Sync)
@@ -274,6 +275,24 @@ function populateFilters() {
     wholesalers.forEach(w => select.innerHTML += `<option value="${w}">${w}</option>`);
 }
 
+// دالة تحريك الأرقام بأسلوب أكاديمي ناعم
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeProgress = progress * (2 - progress); // حركة بطيئة في النهاية (Ease-out)
+        const currentVal = Math.floor(easeProgress * (end - start) + start);
+        obj.innerHTML = formatMoney(currentVal);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = formatMoney(end);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
 function renderInvoices() {
     const tbody = document.getElementById('invoices-body');
     tbody.innerHTML = '';
@@ -284,13 +303,20 @@ function renderInvoices() {
     if(wFilter !== 'all') invoices = invoices.filter(inv => inv.wholesaler === wFilter);
     if(sFilter !== 'all') invoices = invoices.filter(inv => inv.status.category === sFilter);
 
+    let totalDebt = 0; // متغير لحساب إجمالي الديون المعروضة
+
     const editSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
     const delSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
     let count = 1;
     invoices.forEach(inv => {
         if(cart.some(c => c.id === inv.id)) return;
-        const remainingText = inv.remainingAmount ? formatMoney(inv.remainingAmount) : ''; // يترك فارغاً إذا لم يكن هناك متبقي
+        
+        // حساب إجمالي الديون (يأخذ المتبقي إن وجد، وإلا يأخذ المبلغ الأصلي)
+        const effectiveAmount = inv.remainingAmount ? inv.remainingAmount : inv.amount;
+        totalDebt += effectiveAmount;
+
+        const remainingText = inv.remainingAmount ? formatMoney(inv.remainingAmount) : '';
         
         tbody.innerHTML += `
             <tr class="status-${inv.status.category}">
@@ -305,6 +331,13 @@ function renderInvoices() {
                 </td>
             </tr>`;
     });
+
+    // تشغيل أنيميشن العداد للديون
+    const debtEl = document.getElementById('total-debt-amount');
+    if (debtEl) {
+        animateValue(debtEl, currentDisplayedDebt, totalDebt, 800); // 800 ملي ثانية مدة الحركة
+        currentDisplayedDebt = totalDebt; // حفظ الرقم الجديد للأنيميشن القادم
+    }
 }
 
 function renderCart() {
