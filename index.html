@@ -84,6 +84,16 @@
 
         <!-- القوائم -->
         <div id="invoices-section">
+            <!-- بطاقة إجمالي الديون التفاعلية (الجديدة) -->
+            <div class="debt-summary-card">
+                <div class="debt-icon">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+                <div class="debt-details">
+                    <h3>مجموع الديون (للقوائم المعروضة)</h3>
+                    <p><span id="total-debt-amount">0</span> <span style="font-size: 1.2rem; font-weight: normal; opacity: 0.8;">د.ع</span></p>
+                </div>
+            </div>
             <div class="filters">
                 <select id="wholesaler-filter" onchange="renderInvoices()">
                     <option value="all">كل المذاخر</option>
