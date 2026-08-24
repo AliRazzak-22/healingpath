@@ -196,6 +196,40 @@ select:focus { border-color: var(--primary-color); }
     #print-area .print-header h1, #print-area .print-header h2, #print-area .print-header h3 { margin: 5px 0; }
     .toast { display: none !important; }
 }
+
+/* ================= تصميم تفاعلية الأزرار العامة ================= */
+.action-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateZ(0); }
+.action-btn:hover { transform: translateY(-3px); }
+.action-btn:active { transform: translateY(1px); }
+.action-btn.primary { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.action-btn.primary:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+
+/* زر نظام الأطباء في البوابة */
+.btn-docs { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.btn-docs:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3); }
+
+/* ================= لمسات الجمال والتصميم الهندسي لمعلومات الطبيب ================= */
+.doctor-profile-card { background: #ffffff; padding: 35px; border-radius: 20px; border: 1px solid rgba(139,92,246, 0.2); box-shadow: 0 10px 30px rgba(139,92,246,0.08); position: relative; overflow: hidden; }
+
+/* إضافة شكل هندسي خفيف في الخلفية لجمالية أعلى (Watermark Gradient) */
+.doctor-profile-card::before { content: ''; position: absolute; top: -70px; left: -70px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none; }
+
+.doc-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 35px; margin-top: 25px; position: relative; z-index: 2; }
+
+.info-card-modern { display: flex; align-items: center; gap: 18px; background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+.info-card-modern:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(139,92,246,0.1); border-color: #ddd6fe; }
+
+.info-icon-wrapper { width: 55px; height: 55px; border-radius: 14px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.info-card-modern:hover .info-icon-wrapper { transform: scale(1.15) rotate(8deg); }
+
+.info-text-wrapper { display: flex; flex-direction: column; overflow: hidden; }
+.info-label-modern { font-size: 0.85rem; color: #94a3b8; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.info-value-modern { font-size: 1.2rem; color: #1e293b; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* تأثير تفاعلي لأزرار التبويبات العلوية للأطباء */
+.nav-buttons .nav-btn { transition: color 0.3s, transform 0.3s; }
+.nav-buttons .nav-btn:hover { color: #8b5cf6; transform: translateY(-2px); }
+.nav-buttons .nav-btn.active::after { transition: width 0.3s ease; width: 100%; background-color: #8b5cf6; }
     
     /* جعل البطاقات الإحصائية واحدة أسفل الأخرى */
     .summary-cards { grid-template-columns: 1fr; }
