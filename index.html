@@ -23,6 +23,7 @@
         <div class="portal-buttons">
             <button class="btn-portal btn-fin" onclick="openSystem('financial')">التقارير المالية</button>
             <button class="btn-portal btn-dues" onclick="openSystem('dues')">تسديدات المذاخر</button>
+            <button class="btn-portal" onclick="openSystem('doctors')" style="background-color: #8b5cf6;">إدارة الأطباء</button>
         </div>
     </div>
 
@@ -31,10 +32,7 @@
         <div class="top-bar">
             <button class="action-btn outline" onclick="openSystem('portal')">العودة للبوابة</button>
             <h1 class="header-title">التقارير المالية</h1>
-            <div style="display: flex; gap: 10px;">
-                <button class="action-btn outline" onclick="openAutoCartModal()" style="border-color: var(--primary-color); color: var(--primary-color);">السلة التلقائية</button>
-                <button class="action-btn primary" onclick="openInvoiceModal()">إضافة قائمة جديدة</button>
-            </div>
+            <button class="action-btn primary" onclick="openModal('fin-modal')">إضافة مبيعات يومية</button>
         </div>
 
         <div id="months-view">
@@ -73,7 +71,10 @@
         <div class="top-bar">
             <button class="action-btn outline" onclick="openSystem('portal')">العودة للبوابة</button>
             <h1 class="header-title">إستحقاقات المذاخر</h1>
-            <button class="action-btn primary" onclick="openModal('invoice-modal')">إضافة قائمة جديدة</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn outline" onclick="openAutoCartModal()" style="border-color: var(--primary-color); color: var(--primary-color);">السلة التلقائية</button>
+                <button class="action-btn primary" onclick="openInvoiceModal()">إضافة قائمة جديدة</button>
+            </div>
         </div>
 
         <div class="nav-buttons">
@@ -263,6 +264,172 @@
         </div>
     </div>
 
+    <!-- ================= 4. نظام إدارة الأطباء ================= -->
+    <div id="doctors-system" class="hidden-screen">
+        <div class="top-bar">
+            <button class="action-btn outline" onclick="openSystem('portal')">العودة للبوابة</button>
+            <h1 class="header-title" style="color: #8b5cf6;">إدارة الأطباء</h1>
+            <button class="action-btn primary" onclick="openModal('add-doc-modal')" style="background-color: #8b5cf6;">إضافة طبيب جديد</button>
+        </div>
+
+        <!-- تبويبات الأطباء -->
+        <div class="nav-buttons" id="doctors-tabs-container">
+            <!-- سيتم توليد أزرار الأطباء هنا برمجياً -->
+        </div>
+
+        <!-- ملف الطبيب والأكورديون -->
+        <div id="doctor-workspace" class="hidden">
+            <!-- بطاقة معلومات الطبيب -->
+            <div class="doctor-profile-card">
+                <div class="doc-header-row">
+                    <h2 id="view-doc-name" style="color: #6d28d9; font-size: 2rem;">---</h2>
+                    <div class="dropdown-container">
+                        <button class="icon-btn" onclick="document.getElementById('doc-settings-menu').classList.toggle('hidden')">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
+                        <div id="doc-settings-menu" class="dropdown-menu hidden">
+                            <button onclick="editCurrentDoctor()">تعديل معلومات الطبيب</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="doc-info-grid">
+                    <p><strong>الإختصاص:</strong> <span id="view-doc-spec">---</span></p>
+                    <p><strong>تاريخ المباشرة:</strong> <span id="view-doc-start">---</span></p>
+                    <p><strong>العقد المالي:</strong> <span id="view-doc-contract">---</span></p>
+                    <p><strong>العطلة الأسبوعية:</strong> <span id="view-doc-off">---</span></p>
+                </div>
+                <div class="doc-actions-row">
+                    <button class="action-btn primary" onclick="openDocRecordModal()" style="background-color: #8b5cf6;">إضافة معلومات يومية</button>
+                    <button class="action-btn outline" onclick="openBonusesModal()" style="border-color: #ec4899; color: #ec4899;">🎁 بونصات الطبيب</button>
+                </div>
+            </div>
+
+            <!-- حاوية الأشهر (الأكورديون) -->
+            <div id="doc-months-accordion" style="margin-top: 30px;">
+                <!-- سيتم توليد الأشهر هنا برمجياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= نوافذ نظام الأطباء المنبثقة ================= -->
+    
+    <!-- نافذة إضافة/تعديل طبيب -->
+    <div id="add-doc-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="doc-modal-title">إضافة طبيب جديد</h2>
+                <button class="close-btn" onclick="closeModal('add-doc-modal')">×</button>
+            </div>
+            <form onsubmit="submitDoctor(event)" id="doc-form">
+                <input type="hidden" id="doc-id">
+                <div class="form-group"><label>اسم الطبيب:</label><input type="text" id="doc-name" required></div>
+                <div class="form-group"><label>الإختصاص:</label><input type="text" id="doc-spec" required></div>
+                <div class="form-group"><label>تاريخ المباشرة:</label><input type="date" id="doc-start" required></div>
+                <div class="form-group"><label>العقد المالي (إن وجد):</label><input type="text" id="doc-contract" placeholder="مثال: نسبة 40% أو راتب ثابت"></div>
+                <div class="form-group">
+                    <label>العطلة الأسبوعية (اختر يوم أو أكثر):</label>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;" id="doc-off-days">
+                        <label><input type="checkbox" value="السبت"> السبت</label>
+                        <label><input type="checkbox" value="الأحد"> الأحد</label>
+                        <label><input type="checkbox" value="الإثنين"> الإثنين</label>
+                        <label><input type="checkbox" value="الثلاثاء"> الثلاثاء</label>
+                        <label><input type="checkbox" value="الأربعاء"> الأربعاء</label>
+                        <label><input type="checkbox" value="الخميس"> الخميس</label>
+                        <label><input type="checkbox" value="الجمعة"> الجمعة</label>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn primary full-width" style="background-color: #8b5cf6;">حفظ بيانات الطبيب</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة اليومية للأطباء -->
+    <div id="doc-record-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>إدخال معلومات الطبيب اليومية</h2>
+                <button class="close-btn" onclick="closeModal('doc-record-modal')">×</button>
+            </div>
+            <form onsubmit="submitDocRecord(event)" id="doc-record-form">
+                <div class="split-group">
+                    <div class="form-group" style="flex:1;"><label>تاريخ اليوم:</label><input type="date" id="drec-date" required></div>
+                    <div class="form-group" style="flex:1;"><label>عدد الوصفات:</label><input type="number" id="drec-recipes" required min="0"></div>
+                </div>
+                <div class="split-group">
+                    <div class="form-group" style="flex:1;"><label>مبلغ المبيعات الكلي:</label><input type="number" id="drec-sales" required min="0"></div>
+                    <div class="form-group" style="flex:1;"><label>الربح اليومي (من الوصفات):</label><input type="number" id="drec-profit" required min="0"></div>
+                </div>
+                <div class="form-group"><label>تكلفة طلبات الدكتور:</label><input type="number" id="drec-req-cost" required min="0" value="0"></div>
+                <div class="form-group"><label>تفاصيل الطلب (إن وجدت):</label><input type="text" id="drec-req-det" placeholder="مثال: ضيافة، مستلزمات طبية..."></div>
+                <div class="form-group"><label>تكلفة الإعلانات والترويج:</label><input type="number" id="drec-ads" required min="0" value="0"></div>
+                <button type="submit" class="action-btn primary full-width" style="background-color: #8b5cf6;">حفظ السجل</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة بونصات الطبيب الرئيسية -->
+    <div id="bonuses-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>بونصات الطبيب الحالية</h2>
+                <button class="close-btn" onclick="closeModal('bonuses-modal')">×</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="action-btn primary" onclick="openModal('add-bonus-modal'); document.getElementById('bonus-form').reset();" style="background-color: #ec4899;">+ إضافة بونص</button>
+                <button class="action-btn outline" onclick="openModal('prev-bonuses-modal'); renderPrevBonuses();" style="border-color: #6b7280; color: #6b7280;">البونصات المصروفة السابقة</button>
+            </div>
+            <div class="table-wrapper"><table style="min-width: 700px;">
+                <thead><tr><th>الآيتم</th><th>الشراء</th><th>البيع</th><th>العدد</th><th>التاريخ</th><th>الربح</th><th>صرف</th></tr></thead>
+                <tbody id="active-bonuses-body"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة بونص -->
+    <div id="add-bonus-modal" class="modal-overlay hidden" style="z-index: 1001;">
+        <div class="modal-content">
+            <div class="modal-header"><h2>إضافة بونص جديد</h2><button class="close-btn" onclick="closeModal('add-bonus-modal')">×</button></div>
+            <form onsubmit="submitBonus(event)" id="bonus-form">
+                <div class="form-group"><label>اسم الآيتم:</label><input type="text" id="bon-name" required></div>
+                <div class="split-group">
+                    <div class="form-group" style="flex:1;"><label>سعر الشراء:</label><input type="number" id="bon-buy" required min="0"></div>
+                    <div class="form-group" style="flex:1;"><label>سعر البيع:</label><input type="number" id="bon-sell" required min="0"></div>
+                </div>
+                <div class="split-group">
+                    <div class="form-group" style="flex:1;"><label>العدد:</label><input type="number" id="bon-count" required min="1"></div>
+                    <div class="form-group" style="flex:1;"><label>تاريخ الحصول:</label><input type="date" id="bon-date" required></div>
+                </div>
+                <button type="submit" class="action-btn primary full-width" style="background-color: #ec4899;">حفظ البونص</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة البونصات السابقة -->
+    <div id="prev-bonuses-modal" class="modal-overlay hidden" style="z-index: 1001;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header"><h2>البونصات المصروفة</h2><button class="close-btn" onclick="closeModal('prev-bonuses-modal')">×</button></div>
+            <div class="table-wrapper"><table style="min-width: 700px;">
+                <thead><tr><th>الآيتم</th><th>سعر البيع</th><th>العدد</th><th>الربح المحقق</th><th>تاريخ الصرف</th><th>حذف</th></tr></thead>
+                <tbody id="prev-bonuses-body"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- ================= منطقة الطباعة المخفية (للتعديل المستقبلي) ================= -->
+    <div id="print-area" class="print-only">
+        <!-- يمكنك تعديل هذا الهيدر مستقبلاً، إضافة شعار (Logo)، وتغيير النصوص كما تشاء -->
+        <div class="print-header" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px;">
+            <h1 style="font-size: 28px; margin-bottom: 5px;">مجمع وصيدلية درب الشفاء</h1>
+            <h2 id="print-doc-title" style="font-size: 22px; color: #333; margin-bottom: 5px;">تقرير الطبيب</h2>
+            <h3 id="print-month-title" style="font-size: 18px; color: #555;">الشهر</h3>
+        </div>
+        <div id="print-content"></div> <!-- الجدول سيتم وضعه هنا برمجياً -->
+        <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+            <p>توقيع المحاسب: _______________</p>
+            <p>توقيع الطبيب: _______________</p>
+        </div>
+    </div>
+    
     <!-- استدعاء الداتا القديمة (يجب أن يبقى ملف data.js بجانب هذه الملفات) -->
     <script src="data.js"></script>
     <script src="app.js"></script>
