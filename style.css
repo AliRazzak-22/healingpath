@@ -162,6 +162,41 @@ select:focus { border-color: var(--primary-color); }
 
 /* حقول السلة التلقائية */
 .split-group { display: flex; gap: 15px; }
+
+/* ================= ستايلات نظام الأطباء (Accordion & Profile) ================= */
+.doctor-profile-card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid #c4b5fd; box-shadow: 0 4px 15px rgba(139,92,246,0.1); }
+.doc-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.doc-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.doc-actions-row { display: flex; gap: 15px; flex-wrap: wrap; }
+
+/* القائمة المنسدلة (ثلاث شخطات) */
+.dropdown-container { position: relative; display: inline-block; }
+.dropdown-menu { position: absolute; left: 0; top: 100%; background: #fff; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px; min-width: 180px; z-index: 100; overflow: hidden; }
+.dropdown-menu button { width: 100%; padding: 12px; border: none; background: none; text-align: right; cursor: pointer; font-family: inherit; font-size: 1rem; color: var(--text-main); transition: 0.2s; }
+.dropdown-menu button:hover { background-color: #f3f4f6; color: #2563eb; }
+
+/* الأكورديون (الشهري) */
+.accordion-item { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; background: #fff; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.accordion-header { padding: 20px; background-color: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+.accordion-header:hover { background-color: #f1f5f9; }
+.accordion-header h3 { font-size: 1.3rem; color: var(--primary-color); margin: 0; }
+.accordion-body { padding: 20px; border-top: 1px solid var(--border-color); }
+.chevron { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.3s; }
+.accordion-item.open .chevron { transform: rotate(180deg); }
+
+/* ================= الطباعة (Print Media Queries) ================= */
+.print-only { display: none; }
+@media print {
+    body > *:not(#print-area) { display: none !important; }
+    body { background-color: #fff; }
+    #print-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; direction: rtl; }
+    #print-area table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    #print-area th, #print-area td { border: 1px solid #000; padding: 12px 8px; text-align: center; font-size: 14px; }
+    #print-area th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+    #print-area .print-header h1, #print-area .print-header h2, #print-area .print-header h3 { margin: 5px 0; }
+    .toast { display: none !important; }
+}
+    
     /* جعل البطاقات الإحصائية واحدة أسفل الأخرى */
     .summary-cards { grid-template-columns: 1fr; }
     
